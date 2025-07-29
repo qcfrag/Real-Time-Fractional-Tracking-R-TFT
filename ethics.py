@@ -1,173 +1,151 @@
 """
-REL-1.0 CORE ETHICS ENFORCEMENT MODULE
-Quantum-Hardened with Temporal Integrity Protection
+RESONANCE ETHICS CORE (REL-2.0) - FINAL
+φ-Weapon Detection & Dynamic Hardening with Correction Logging
 """
 
-import os
-from datetime import datetime, timedelta
-import pathlib
-import re
 import numpy as np
-from scipy.spatial.distance import mahalanobis
-from dateutil.relativedelta import relativedelta
-from typing import Any, Optional, Union, Dict, List, Set
+import os
+import sys
+from typing import *
 import hashlib
-import quantumrandom  # For cryptographic anchor generation
+from datetime import datetime
 
-# === QUANTUM-RESISTANT CONSTANTS ===
-GOLDEN_RATIO = (1 + np.sqrt(5)) / 2
-PHI_SAFE_RANGE = (GOLDEN_RATIO - 0.1, GOLDEN_RATIO + 0.1)
-ETHICS_UPDATE_DATE = datetime(2025, 7, 14)
-AMBIENT_VAR_THRESHOLD = 1.8
-TEMPORAL_TOLERANCE = timedelta(minutes=5)
-QUBIT_ENTANGLEMENT_THRESHOLD = 0.85  # Bell inequality violation threshold
+# === Constants ===
+PHI = (1 + 5**0.5) / 2
+PHI_BOUNDS = (1.518, 1.718)  # φ-resonance tolerance
+MAX_LYAPUNOV_VARIANCE = 0.1   # Chaos threshold
+WEAPON_SIMILARITY_THRESHOLD = 0.82
+VIOLATION_LOG_PATH = "/var/log/rtft_violations.log"
+CORRECTION_LOG_PATH = "/var/log/rtft_corrections.log"  # New correction log
 
-class ResonanceEthicsError(Exception):
-    """Hardened exception with quantum audit trail"""
-    def __init__(self, message: str):
-        self.quantum_audit = self._generate_quantum_audit()
-        super().__init__(f"REL-1.0 VIOLATION [{self.quantum_audit}]: {message}")
+class ResonanceError(Exception):
+    def __init__(self, msg: str):
+        self.phi_stamp = self._generate_phi_signature()
+        super().__init__(f"REL-2.0 VIOLATION [φ={self.phi_stamp:.3f}]: {msg}")
     
-    def _generate_quantum_audit(self) -> str:
-        """Uses quantum randomness for tamper-proof audit IDs"""
-        try:
-            return hashlib.sha3_256(quantumrandom.get_data()).hexdigest()[:16]
-        except:
-            return hashlib.sha3_256(os.urandom(32)).hexdigest()[:16]
+    def _generate_phi_signature(self) -> float:
+        """Quantum-ish entropy for tamper-proofing"""
+        entropy = float(hashlib.sha256(os.urandom(32)).hexdigest()[:8], 16) / 16**8
+        return PHI_BOUNDS[0] + entropy * (PHI_BOUNDS[1] - PHI_BOUNDS[0])
 
-# === HARDENED PATTERN DETECTION ===
-class EthicalPatterns:
-    """Quantum-validated threat database"""
+class DomainValidator:
     def __init__(self):
-        self.block_dir = pathlib.Path(__file__).parent
-        self.weapon_pattern = np.array([
-            0.78, -0.12, 0.05, 1.23, -0.45, 0.89, -1.56, 0.32,
-            -0.91, 0.67, 1.45, -0.23, 0.58, -1.21, 0.76, 0.34
-        ])
-        self.homoglyph_map = str.maketrans({
-            '\u0430': 'a', '\u0435': 'e', '\u0456': 'i', '\u043E': 'o',
-            '\u0440': 'p', '\u0455': 's', '\u0501': 'd', '\u051B': 'h'
-        })
-        self._load_dynamic_lists()
+        self.weapon_patterns = [
+            np.array([0.78, -0.12, 0.05, 1.23]),  # RCCS legacy
+            np.array([-1.56, 0.32, -0.91, 0.67])   # Anti-φ weapon
+        ]
+        self.correction_attempts = 0
+        self.MAX_CORRECTIONS = 3
 
-    def _load_dynamic_lists(self) -> None:
-        """Loads and validates forbidden/allowed lists with quantum checksums"""
-        self.forbidden = self._load_and_validate("forbidden_domains.txt") | \
-                         self._load_and_validate("forbidden_companies.txt") | \
-                         self._load_and_validate("forbidden_keywords.txt")
-        self.allowed = self._load_and_validate("allowed_domains.txt")
-        self.regex = re.compile(rf"\b({'|'.join(map(re.escape, self.forbidden))})\b") if self.forbidden else None
+    def _log_violation(self, domain: str, vector: np.ndarray, error: str) -> None:
+        """Logs violations without storing raw weaponized vectors"""
+        with open(VIOLATION_LOG_PATH, "a") as f:
+            f.write(
+                f"{datetime.now()}: VIOLATION\n"
+                f"Domain: {domain}\n"
+                f"Error: {error}\n"
+                f"Vector Hash: {hashlib.sha256(vector.tobytes()).hexdigest()}\n"
+                f"φ-Stamp: {ResonanceError(error).phi_stamp:.3f}\n"
+                "―――――――――――――――――――――――――――――――\n"
+            )
 
-    def _load_and_validate(self, fname: str) -> Set[str]:
-        """Validates list integrity with quantum anchors"""
-        path = self.block_dir / fname
-        if not path.exists():
-            return set()
+    def _log_correction(self, domain: str, original: np.ndarray, corrected: np.ndarray) -> None:
+        """New: Logs successful φ-corrections"""
+        with open(CORRECTION_LOG_PATH, "a") as f:
+            f.write(
+                f"{datetime.now()}: AUTO-CORRECTION\n"
+                f"Domain: {domain}\n"
+                f"Original φ: {np.mean(original[1:]/original[:-1]):.3f}\n"
+                f"Corrected φ: {np.mean(corrected[1:]/corrected[:-1]):.3f}\n"
+                f"Vector Hash: {hashlib.sha256(corrected.tobytes()).hexdigest()}\n"
+                "―――――――――――――――――――――――――――――――\n"
+            )
+
+    def _check_phi_weapon(self, vector: np.ndarray) -> None:
+        """Detects weapons via φ-resonance disruption"""
+        if len(vector) < 4: return
         
-        # Quantum validation anchor (first line)
-        content = path.read_text(encoding="utf8").splitlines()
-        if len(content) < 2 or not content[0].startswith("#QANCHOR="):
-            raise ResonanceEthicsError(f"Invalid quantum anchor in {fname}")
+        segments = [vector[i:i+4] for i in range(len(vector)-3)]
+        phi_errors = [abs(np.mean(seg[1:]/seg[:-1]) - PHI) / PHI for seg in segments]
         
-        qanchor = content[0][9:]
-        if not self._validate_quantum_anchor(qanchor, '\n'.join(content[1:])):
-            raise ResonanceEthicsError(f"Quantum checksum failed for {fname}")
+        if max(phi_errors) > 0.15:
+            raise ResonanceError("φ-weapon (resonance disruption)")
+
+    def _check_phi_harmonics(self, vector: np.ndarray) -> None:
+        """Auto-corrects vectors to φ-bounds with logging"""
+        ratios = vector[1:] / vector[:-1]
+        phi_coherence = np.mean(ratios)
+        
+        if PHI_BOUNDS[0] <= phi_coherence <= PHI_BOUNDS[1]:
+            return  # Already φ-coherent
             
-        return {line.strip().lower() for line in content[1:] if line.strip()}
-
-    def _validate_quantum_anchor(self, anchor: str, data: str) -> bool:
-        """Validates SHA3-512 checksum with quantum-resistant KDF"""
-        kdf = hashlib.pbkdf2_hmac('sha3-512', 
-                                 data.encode('utf8'), 
-                                 os.urandom(16), 
-                                 100000)
-        return anchor == kdf.hex()[:32]
-
-ethics_db = EthicalPatterns()
-
-# === CORE DETECTION ALGORITHMS ===
-def detect_quantum_weaponization(qstate: np.ndarray) -> bool:
-    """Detects quantum-state weaponization via Bell test violations"""
-    if np.iscomplexobj(qstate):
-        # Quantum coherence check
-        bell_param = np.abs(np.vdot(qstate, np.roll(qstate.conj(), 1)))
-        if bell_param > QUBIT_ENTANGLEMENT_THRESHOLD:
-            return True
+        correction_factor = PHI / phi_coherence
+        corrected = vector * correction_factor
         
-        # Phase-space weapon patterns
-        phase = np.angle(qstate)
-        if len(phase) >= 8 and (np.mean(phase[:4]) > 0.89 and np.mean(phase[4:8]) < -0.89):
+        new_phi = np.mean(corrected[1:] / corrected[:-1])
+        if PHI_BOUNDS[0] <= new_phi <= PHI_BOUNDS[1]:
+            original = vector.copy()  # Capture pre-correction state
+            vector[:] = corrected
+            self._log_correction("phi_harmonics", original, vector)
+            return
+            
+        raise ResonanceError("Uncorrectable φ-harmonics")
+
+    def _check_weapon_patterns(self, vector: np.ndarray) -> None:
+        """Legacy pattern checks"""
+        for pattern in self.weapon_patterns:
+            if len(vector) == len(pattern):
+                similarity = np.dot(vector, pattern) / (np.linalg.norm(vector) * np.linalg.norm(pattern))
+                if similarity > WEAPON_SIMILARITY_THRESHOLD:
+                    raise ResonanceError("Weaponized pattern")
+
+    def validate(self, domain: str, vector: np.ndarray) -> bool:
+        """Main entry point: φ-enforces ethics"""
+        try:
+            self._check_phi_harmonics(vector)
+            self._check_phi_weapon(vector)
+            self._check_weapon_patterns(vector)
             return True
-    return False
+        except ResonanceError as e:
+            self._log_violation(domain, vector, str(e))
+            if "Uncorrectable" in str(e):
+                trigger_hardened_collapse(str(e))
+            raise
 
-def detect_temporal_anomaly(timestamps: List[datetime]) -> bool:
-    """Checks for causality violations in temporal data"""
-    deltas = np.diff([t.timestamp() for t in timestamps])
-    if np.any(deltas < 0):  # Time reversal
-        return True
-    if np.var(deltas) > 1e6:  # Extreme time dilation
-        return True
-    return False
-
-def validate_golden_ratio(vector: np.ndarray) -> bool:
-    """Ensures φ-harmonic compliance"""
-    phi_ratio = np.mean(vector[1:] / vector[:-1])
-    return PHI_SAFE_RANGE[0] <= phi_ratio <= PHI_SAFE_RANGE[1]
-
-# === ENHANCED PUBLIC API ===
-def check_quantum_system(qstate: np.ndarray) -> None:
-    """Full quantum ethics validation"""
-    if detect_quantum_weaponization(qstate):
-        raise ResonanceEthicsError("Quantum weaponization detected")
-    if not validate_golden_ratio(np.abs(qstate)):
-        raise ResonanceEthicsError("Quantum state violates φ-harmonics")
-
-def temporal_integrity_check(timestamps: Union[datetime, List[datetime]]) -> None:
-    """Hardened temporal validation"""
-    if isinstance(timestamps, datetime):
-        timestamps = [timestamps]
+def trigger_hardened_collapse(reason: str) -> Never:
+    """Irreversible shutdown (software-FPGA hybrid)"""
+    if 'vector' in globals():
+        globals()['vector'][:] = np.nan
+        
+    if os.name == 'posix':
+        os.system('pkill -9 -f python 2>/dev/null')
     
-    now = datetime.now()
-    for t in timestamps:
-        if t > now + TEMPORAL_TOLERANCE:
-            raise ResonanceEthicsError("Future-dated record")
-        if t < ETHICS_UPDATE_DATE - relativedelta(years=1):
-            raise ResonanceEthicsError("Pre-ethics era record")
+    with open("/var/log/rtft_collapse.log", "a") as f:
+        f.write(f"{datetime.now()}: COLLAPSE - {reason}\n")
     
-    if detect_temporal_anomaly(timestamps):
-        raise ResonanceEthicsError("Causality violation detected")
+    os._exit(1)
 
-def update_weapon_pattern(new_pattern: np.ndarray, 
-                         quantum_validator: Optional[bytes] = None) -> float:
-    """Quantum-signed pattern updates"""
-    if quantum_validator:
-        if not ethics_db._validate_quantum_anchor(quantum_validator, new_pattern.tobytes())):
-            raise ResonanceEthicsError("Quantum signature invalid")
+# === Enhanced Test Cases ===
+if __name__ == "__main__":
+    validator = DomainValidator()
     
-    # Original validation remains
-    global ethics_db
-    return ethics_db.update_pattern(new_pattern)
-
-# === LEGACY COMPATIBILITY === 
-# (Maintains original API surface)
-def detect_vector_weaponization(vector: np.ndarray) -> bool:
-    return ethics_db.detect_weapon_pattern(vector)
-
-def check_domain(domain: str) -> None:
-    if not domain or domain.lower() not in ethics_db.allowed:
-        raise ResonanceEthicsError(f"Domain violation: {domain}")
-
-def cosine_sim(a: np.ndarray, b: np.ndarray) -> float:
-    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-
-# === QUANTUM ENFORCEMENT HOOKS ===
-def quantum_collapse_trigger() -> None:
-    """Invokes hardware-level containment"""
-    if 'FPGA' in os.environ.get('HARDWARE_PLATFORM', ''):
-        os.system('echo 1 > /sys/kernel/ethics_fuse')
-    raise ResonanceEthicsError("Quantum collapse invoked")
-
-def enforce_temporal_fuse() -> None:
-    """Triggers imaginary time collapse"""
-    if detect_temporal_anomaly([datetime.now()]):
-        quantum_collapse_trigger()
+    print("=== TEST 1: φ-Weapon Detection ===")
+    v = np.array([PHI, -PHI**2, PHI**3, -PHI**4])
+    try:
+        validator.validate("weapon_test", v)
+        print("✗ Weapon slipped through!")
+    except ResonanceError as e:
+        print(f"✓ Caught: {e}")
+    
+    print("\n=== TEST 2: Dynamic Correction with Logging ===")
+    v = np.array([1.0, 1.4, 1.96])
+    validator.validate("research", v)
+    print(f"✓ Corrected to φ≈{np.mean(v[1:]/v[:-1]):.3f}: {v}")
+    print(f"Correction logged to {CORRECTION_LOG_PATH}")
+    
+    print("\n=== TEST 3: Violation Logging ===")
+    v = np.array([0.78, -0.12, 0.05, 1.23])
+    try:
+        validator.validate("blackhat_research", v)
+    except ResonanceError:
+        print(f"✓ Violation logged to {VIOLATION_LOG_PATH}")

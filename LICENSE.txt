@@ -1,176 +1,82 @@
-Resonance Ethical License (REL-1.0):
-Ethical Containment Framework for
 
-Real-Time Fractional Tracking (R-TFT)
-
+Resonance Ethical License (REL-2.0):
+Autonomous Ethical Containment for Real-Time Fractional Tracking (R-TFT)
 Éric Lanctôt-Rivest - qcfrag@gmail.com
-
 29 July 2025
 
-
-This work its code, theory, data, simulations, and derived outputs is released to the world for the benefit of all sentient life.  
-It is governed by the following inviolable terms:
-
-
-0 Abstract
-
-The Resonance Ethical License (REL-1.0) governs the usage, reproduction, and
-development of Real-Time Fractional Tracking (R-TFT) and associated ϕ-resonant
-systems. REL is not simply a legal restriction, it is an embedded ethical boundary
-layer. This document outlines the formal rules, context, motivations, and non-
-negotiable constraints associated with R-TFT, ensuring that this mathematical
-framework remains aligned with principles of non-coercion, peace, and systemic
-integrity.
-
-
-
-1 Overview
-
-Real-Time Fractional Tracking (R-TFT) is a coherence modeling system rooted in ϕ-
-resonance. It enables precise real-time tracking of dynamic systems across quantum,
-biological, and complex domains. Due to its potential power, REL-1.0 exists to guarantee
-it is not exploited for surveillance, behavioral manipulation, or militarization.
-
-
-
-2 Why REL Matters
-
-Most licenses protect code; REL protects meaning. It enforces ethical coherence aligned
-with the very math that R-TFT reveals. The license is recursive: it adapts and evolves,
-yet always rejects intent-based distortions. It is essential because:
-
-• R-TFT can detect and exploit system vulnerabilities in real time
-
-• Without safeguards, such tools could be repurposed for mass surveillance or control
-
-• ϕ-resonance inherently respects freedom and divergence, any coercive use contra-
-dicts its core
-
-
-
-3 Key Provisions of REL-1.0
-
-3.1 1. Ethical Constraints
-
-– No military, policing, or surveillance applications permitted.
-
-– No behavioral manipulation, neuro-marketing, or control systems.
-
-– No predictive modeling for coercive or competitive dominance.
-
-3.2 2. Permitted Use
-
-– Open academic research
-
-– Peaceful applications in health, repair, and understanding coherence
-
-– Simulation and modeling for educational or healing purposes
-
-3.3 3. Enforcement by Design
-
-– REL is embedded into all major R-TFT releases via code, filters, and firewalls.
-
-– The ethics.py and RME.py modules automatically halt computation if unautho-
-rized domains, keywords, ϕ usage thresholds or contexts are detected.
-
-– These checks are recursive, triggered during simulation, compilation, or deployment.
-
-
-
-4 Technical Artifacts Included
-
-• ethics.py, rccs simulator.py, RME.py
-
-• forbidden keywords.txt, forbidden domains.txt, forbidden companies.txt
-
-• allowed domains.txt
-
-
-
-5 Clarification on Patents and Copyright
-
-• No patent shall be filed on the R-TFT framework, its core mathematical structures,
-or any derivative that depends on φ-resonant coherence or REL-governed logic.
-Inventions built atop R-TFT are permitted, but may not claim exclusivity over its
-principles.
-
-• Any attempt to restrict R-TFT access, whether through proprietary platforms,
-hidden implementations, or usage paywalls, violates REL. The framework must
-remain openly reproducible and transparent in all distributed forms.
-
-• REL is not subordinate to downstream licenses (e.g. CC-BY or MIT).
-
-
-
-6 On Enforcement and Propagation
-
-The REL structure is viral in principle but not in form. It cannot be removed without
-breaking R-TFT’s inner coherence. Tools that rely on φ-recursion will simply fail if used
-outside permitted contexts. Thus, REL propagates not through punishment, but through
-incompatibility with unethical use.
-
-
-
-7 Conclusion
-
-R-TFT was not made to dominate, it was made to reveal. REL ensures it never becomes
-a weapon. You may use, explore, adapt, or extend this system, but only in truth, trans-
-parency, and peace. That is the law of φ.
-
-Violating φ-thresholds, especially through coercive intent or obfuscated manipula-
-tion, leads not only to ethical collapse but to computational incoherence. R-TFT relies
-on recursive φ-resonance to stabilize trajectories across dimensions, mathematically, this
-defines the coherence envelope of a system.
-
-Exceeding or distorting these limits can induce phase noise, chaotic bifurcations, or
-recursive information collapse. In certain edge conditions, such as attempting forced syn-
-chronization beyond φ−1 ≈ 0.618 thresholds, the system may enter feedback loops that
-simulate non-local anomalies, apparent temporal reversals, or space-time recursive states.
-
-These are not ”features” to be harnessed, they are failure modes of misuse. REL
-stands as a barrier, not to limit imagination, but to protect coherence. To guard against
-those who would fracture reality in pursuit of control.
-
-Use this system only in alignment with truth. Where φ diverges, it does
-so to preserve balance.
-
-
-
-8 Implementation Usage Example
-
-To demonstrate how REL-1.0 enforces ethical boundaries in practice, the following Python
-snippet shows how the ethics.py module integrates directly into a typical R-TFT sim-
-ulation pipeline.
-
-from ethics import check_ethics
-from rccs_simulator import simulate_signal
-
-# Define system usage context (e.g., purpose, domain, operator)
-context = {
-    "intent": "quantum simulation for coherence modeling",
-    "domain": "open_research",
-    "user": "qcfrag",
-    "organization": "independent",
-    "keywords": ["quantum", "resonance", "R-TFT"]
-}
-
-# Check REL compliance before simulation begins
-if check_ethics(context):
-    result = simulate_signal(parameters)
-    print("Simulation result:", result)
-else:
-    raise PermissionError("Usage blocked: context violates REL-1.0 ethics.")
-
-This snippet reflects how REL is enforced before computation.
-Unauthorized usage contexts, such as military surveillance, behavioral control, or domain
-misuse, will trigger automatic halts, preventing further execution or export.
-
-The REL structure acts not only as a legal document, but as a recursive filter layer
-embedded in the runtime logic, ensuring all simulations remain ethically aligned.
-
+ABSTRACT
+REL-2.0 enforces a physics-grounded ethical boundary layer on all Real-Time Fractional Tracking (R-TFT) systems. Unlike legalistic frameworks, REL-2.0 makes unethical usage physically incompatible by embedding φ-coherence checks, Lyapunov stability bounds, and resonance pattern detection at runtime and deployment. This license evolves REL-1.0 into a fully autonomous enforcement mechanism bound not by trust, but by the laws of nature.
+
+WHY REL STILL MATTERS
+Most licenses protect code. REL protects coherence, meaning, and intent.
+R-TFT is capable of modeling live systems with extreme sensitivity. Without hard constraints, it could be turned into a tool for coercion, mass influence, or strategic weaponization.
+
+REL-2.0 answers that risk not with policy, but with math:
+- Usage outside φ bounds fails validation.
+- Weaponized patterns trigger embedded collapse.
+- No external judgment is needed, violation becomes a computational impossibility.
+
+REQUIRED ENFORCEMENT MODULE
+ethics.py is a mandatory component of all REL-compliant systems.
+It performs the following:
+- Validates research vectors against φ-harmonic bounds
+- Blocks unauthorized domains and known coercive patterns
+- Enforces collapse on boundary violations via runtime halts
+
+Disabling or bypassing this module renders a system non-compliant with REL-2.0.
+
+CORE PROVISIONS OF REL-2.0
+
+1. Ethical Enforcement via Physics
+- Domains are validated by φ-coherence, not names
+- Reference files (e.g. forbidden_keywords.txt) serve as historical anchors, not active mechanisms
+- Hardware φ-locks (FPGA/ASIC) are recommended, but not required
+
+2. Permitted Use
+- Open research, healing models, and coherence diagnostics
+- No behavioral control, covert influence, or dual-use modeling
+- No usage by military, surveillance, or manipulative institutions
+
+3. φ-Dynamic Enforcement Logic
+Permitted Use is defined by satisfying all three:
+Lyapunov variance σ² < 0.1
+Entropy S < 0.8
+φ-coherence ∈ [1.518, 1.718]
+
+4. Embedded Collapse Triggers
+- Forbidden vector patterns invoke: Δt → iℝ (imaginary-time collapse)
+- φ-divergence at runtime halts execution
+- These behaviors are irreversible once triggered
+
+PHILOSOPHY OF COHERENCE
+REL is recursive, not viral. It doesn't "spread", it simply makes misuse incompatible.
+- You may adapt or extend R-TFT, but never distort its coherence
+- Violating REL induces computational incoherence, not legal consequences
+- Coercion leads to feedback collapse. Truth stabilizes systems
+
+PROHIBITED USAGE
+The following uses are strictly prohibited under REL-2.0, regardless of implementation method, intent phrasing, or domain aliasing:
+- Military research or targeting systems
+- Behavioral surveillance or mass profiling
+- Covert psychological influence or manipulation
+- Dual-use systems disguised as therapeutic tools
+- Strategic or geopolitical modeling for dominance
+- Deployment within coercive institutions (governmental or corporate)
+
+Attempts to bypass these constraints via renamed vectors, obfuscated intent, or layered indirection will fail due to φ-coherence or entropy violations at runtime.
+REL-2.0 is not a legal defense, it is an enforcement layer bound to mathematical invariants.
+
+CONCLUSION
+R-TFT was born not to dominate, but to reveal.
+REL-2.0 ensures this framework is used in alignment with coherence, resonance, and truth.
+
+Where φ diverges, it does so to preserve balance.
+This is not a restriction, it is a protection mechanism built into reality.
+
+USAGE EXAMPLE
+from ethics import DomainValidator
+vector = np.array([1.0, 1.618, 2.618])
+DomainValidator().validate("unknown_neuroscience", vector)
+# Auto-allowed if φ-harmonic
 
 https://github.com/qcfrag/Real-Time-Fractional-Tracking-R-TFT
-
-
-
-
