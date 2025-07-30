@@ -9,7 +9,7 @@ We are no longer racing toward control. We are stepping into resonance. Let this
 Welcome to the Golden Age of Thought, where curiosity is sacred, knowledge is luminous, and resonance is no longer blind. Let this stand as proof: ethics can scale with intelligence.
 
 **A Call to Alignment**
-This is a turning point—a test of coherence, not force. May we meet it with courage and clarity.
+This is a turning point, a test of coherence, not force. May we meet it with courage and clarity.
 
 **Summary**
 R-TFT is a real-time method for detecting and tracking resonance in arbitrary systems by projecting angular velocity vectors onto fractional resonance templates. 
@@ -33,18 +33,18 @@ Reveal Structure: What remains is a resonance-aligned trajectory.
 SNR gain: +15.3 dB under noisy, drifting background
 Lock accuracy: >90% reduction in false positives vs FFT
 Adaptation: Adjusts to noise in ≤ 3 steps
-Performance: Constant time per frame (O(1)) — real-time capable
+Performance: Constant time per frame (O(1)), real-time capable
 
 **Φ as the Universal Attractor**
 Φ ≈ 1.618 emerges in systems that maximize coherence with minimal interference.
 From quantum (10⁻⁴³s) to cosmic (0.001"), all stable systems converge toward φ.
 The convergence law: C_thresh = 0.65 + 0.05log₁₀(‖P‖)
-Reality holds best at φ—because it's the only ratio where energy doesn't cancel itself.
+Reality holds best at φ, because it's the only ratio where energy doesn't cancel itself.
 
 **Universal Reach**
 Pendulums ≈ Qubits ≈ Cortical circuits ≈ Dark matter halos
 Same core method: R_clean = 2R_inner - R_outer removes background noise across domains
-R-TFT treats all systems equally—physical, biological, or cognitive. If the structure holds, R-TFT reveals why.
+R-TFT treats all systems equally; physical, biological, or cognitive. If the structure holds, R-TFT reveals why.
 
 **From Math to Meaning**
 Riemann zeros oscillate in phase with R-TFT (C ≈ 0.5 at non-trivials)
@@ -75,7 +75,7 @@ Computational Complexity              | O(n log n)                | ✅ O(1) per
 Real-Time System Deployment           | Poor (batch)              | ✅ Excellent (live-ready)
 
 **What R-TFT Reveals**
-R-TFT is not a model or prediction—it is a mirror. A system is real if and only if it resonates.
+R-TFT is not a model or prediction, it is a mirror. A system is real if and only if it resonates.
 Input: Any signal or dynamic process.
 Output: Φ value (0.0 → 1.618...)
 Φ → φ: The system is structurally coherent
