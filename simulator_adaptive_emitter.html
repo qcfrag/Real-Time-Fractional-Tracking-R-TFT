@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R-TFT Adaptive Resonant Emitter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at 30% 40%, #0a0a0a 0%, #1a1a2e 35%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            background: linear-gradient(45deg, #ffd700, #ff6b35, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .subtitle {
+            color: #ffd700;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .status-item {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .status-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #ffd700;
+            margin-top: 5px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 25px;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel h3 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        canvas {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .control-group {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .control-group h4 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        label {
+            min-width: 120px;
+            color: #cccccc;
+            font-size: 0.9em;
+        }
+
+        input, select, button {
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ffd700, #ff6b35);
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+        }
+
+        .emitter-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .emitter-ray {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .ray-angle {
+            font-size: 1.2em;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .ray-power {
+            color: #00ff88;
+            margin-top: 5px;
+        }
+
+        .targeting-info {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #ffd700;
+        }
+
+        .lock-status {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .lock-active { color: #00ff88; }
+        .lock-searching { color: #ffaa00; }
+        .lock-lost { color: #ff4444; }
+
+        .ethics-notice {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+            color: #ffd700;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            .emitter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>R-TFT Adaptive Resonant Emitter</h1>
+            <p class="subtitle">Real-Time Fractional Tracking • Pyramidal Convergence • Golden Ratio Modulation</p>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <div>Target Lock</div>
+                <div class="status-value" id="lockStatus">Searching...</div>
+            </div>
+            <div class="status-item">
+                <div>Resonance Match</div>
+                <div class="status-value" id="resonanceMatch">0.0%</div>
+            </div>
+            <div class="status-item">
+                <div>Energy Efficiency</div>
+                <div class="status-value" id="efficiency">--</div>
+            </div>
+            <div class="status-item">
+                <div>Lock Time</div>
+                <div class="status-value" id="lockTime">0.0s</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="panel">
+                <h3>Target Resonance Profile</h3>
+                <canvas id="targetCanvas"></canvas>
+            </div>
+            <div class="panel">
+                <h3>Emitter Adaptation Response</h3>
+                <canvas id="emitterCanvas"></canvas>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <h4>Target Parameters</h4>
+                <div class="input-row">
+                    <label>Target Type:</label>
+                    <select id="targetType">
+                        <option value="orbital">Orbital System</option>
+                        <option value="neural">Neural Network</option>
+                        <option value="quantum">Quantum State</option>
+                    </select>
+                </div>
+                <div class="input-row">
+                    <label>Base Frequency:</label>
+                    <input type="range" id="targetFreq" min="0.5" max="5" step="0.1" value="2.0">
+                    <span id="targetFreqValue">2.0</span>
+                </div>
+                <div class="input-row">
+                    <label>Chaos Level:</label>
+                    <input type="range" id="chaosLevel" min="0" max="1" step="0.05" value="0.3">
+                    <span id="chaosValue">0.3</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h4>Emitter Control</h4>
+                <div class="input-row">
+                    <label>Adaptation Rate:</label>
+                    <input type="range" id="adaptRate" min="0.1" max="2" step="0.1" value="1.0">
+                    <span id="adaptValue">1.0</span>
+                </div>
+                <div class="input-row">
+                    <label>Golden Ratio φ:</label>
+                    <input type="range" id="goldenRatio" min="1.5" max="1.8" step="0.01" value="1.618">
+                    <span id="goldenValue">1.618</span>
+                </div>
+                <div class="input-row">
+                    <button onclick="startEmitter()">Start Emitter</button>
+                    <button onclick="stopEmitter()">Stop</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="emitter-grid">
+            <div class="emitter-ray">
+                <div class="ray-angle">Ray 1: 0°</div>
+                <div class="ray-power" id="ray1Power">Power: 0.0</div>
+                <div id="ray1Phase">Phase: 0.0°</div>
+            </div>
+            <div class="emitter-ray">
+                <div class="ray-angle">Ray 2: 45°</div>
+                <div class="ray-power" id="ray2Power">Power: 0.0</div>
+                <div id="ray2Phase">Phase: 0.0°</div>
+            </div>
+            <div class="emitter-ray">
+                <div class="ray-angle">Ray 3: 90°</div>
+                <div class="ray-power" id="ray3Power">Power: 0.0</div>
+                <div id="ray3Phase">Phase: 0.0°</div>
+            </div>
+        </div>
+
+        <div class="targeting-info">
+            <div class="lock-status" id="lockStatusDetail">Emitter Ready - Configure target and start emission</div>
+            <div>Current R-TFT Vector: <span id="currentVector">[0.0, 0.0]</span></div>
+            <div>Best Match Vector: <span id="bestVector">None</span></div>
+            <div>Convergence Rate: <span id="convergenceRate">0.0</span></div>
+        </div>
+
+        <div class="ethics-notice">
+            ⚠ REL-1.0 Compliance Active • Peaceful, Scientific, & Unifying Purposes Only ⚠
+        </div>
+    </div>
+
+    <script>
+        class RTFTAdaptiveEmitter {
+            constructor() {
+                this.isRunning = false;
+                this.time = 0;
+                this.dt = 0.02;
+                this.lockStartTime = null;
+                
+                // Golden ratio
+                this.phi = (1 + Math.sqrt(5)) / 2;
+                
+                // Target system state
+                this.targetState = {
+                    frequency: 2.0,
+                    chaos: 0.3,
+                    angularVel: [0, 0],
+                    resonanceProfile: []
+                };
+                
+                // Emitter state
+                this.emitterState = {
+                    rays: [
+                        { angle: 0, power: 0, phase: 0, frequency: 1.0 },
+                        { angle: 45, power: 0, phase: 0, frequency: 1.0 },
+                        { angle: 90, power: 0, phase: 0, frequency: 1.0 }
+                    ],
+                    adaptationRate: 1.0,
+                    isLocked: false,
+                    lockStrength: 0
+                };
+                
+                // Tracking vectors for multi-vector selection
+                this.candidateVectors = [
+                    [1, 0], [0, 1], [1, 1], [-1, 1], [1, -1]
+                ];
+                
+                this.bestVector = [1, 0];
+                this.resonanceHistory = [];
+                this.emitterHistory = [];
+                this.maxHistory = 300;
+                
+                this.initCanvases();
+                this.initEventListeners();
+            }
+
+            initCanvases() {
+                this.targetCanvas = document.getElementById('targetCanvas');
+                this.emitterCanvas = document.getElementById('emitterCanvas');
+                this.targetCtx = this.targetCanvas.getContext('2d');
+                this.emitterCtx = this.emitterCanvas.getContext('2d');
+                
+                this.targetCanvas.width = 600;
+                this.targetCanvas.height = 400;
+                this.emitterCanvas.width = 600;
+                this.emitterCanvas.height = 400;
+            }
+
+            initEventListeners() {
+                document.getElementById('targetFreq').addEventListener('input', (e) => {
+                    this.targetState.frequency = parseFloat(e.target.value);
+                    document.getElementById('targetFreqValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('chaosLevel').addEventListener('input', (e) => {
+                    this.targetState.chaos = parseFloat(e.target.value);
+                    document.getElementById('chaosValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('adaptRate').addEventListener('input', (e) => {
+                    this.emitterState.adaptationRate = parseFloat(e.target.value);
+                    document.getElementById('adaptValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('goldenRatio').addEventListener('input', (e) => {
+                    this.phi = parseFloat(e.target.value);
+                    document.getElementById('goldenValue').textContent = e.target.value;
+                });
+            }
+
+            generateTargetAngularVelocity(t) {
+                const freq = this.targetState.frequency;
+                const chaos = this.targetState.chaos;
+                
+                // Base resonant pattern
+                const base = [
+                    Math.sin(2 * Math.PI * freq * t) + 0.4 * Math.cos(3 * Math.PI * freq * t),
+                    Math.cos(2 * Math.PI * freq * t) + 0.3 * Math.sin(5 * Math.PI * freq * t)
+                ];
+                
+                // Chaotic perturbations
+                const noise = [
+                    (Math.random() - 0.5) * chaos,
+                    (Math.random() - 0.5) * chaos
+                ];
+                
+                return [base[0] + noise[0], base[1] + noise[1]];
+            }
+
+            calculateRTFT(angularVel, vector) {
+                const dotProduct = angularVel[0] * vector[0] + angularVel[1] * vector[1];
+                const magnitude = Math.sqrt(vector[0] ** 2 + vector[1] ** 2);
+                return magnitude > 0 ? dotProduct / magnitude : 0;
+            }
+
+            findBestTrackingVector(angularVel) {
+                let bestVector = this.candidateVectors[0];
+                let maxResonance = 0;
+                
+                for (let vector of this.candidateVectors) {
+                    const resonance = Math.abs(this.calculateRTFT(angularVel, vector));
+                    if (resonance > maxResonance) {
+                        maxResonance = resonance;
+                        bestVector = vector;
+                    }
+                }
+                
+                return { vector: bestVector, strength: maxResonance };
+            }
+
+            updateEmitterAdaptation() {
+                const targetAngularVel = this.targetState.angularVel;
+                const adaptRate = this.emitterState.adaptationRate;
+                
+                // Find best tracking vector
+                const bestMatch = this.findBestTrackingVector(targetAngularVel);
+                this.bestVector = bestMatch.vector;
+                
+                // Calculate target resonance
+                const targetResonance = this.calculateRTFT(targetAngularVel, this.bestVector);
+                
+                // Adapt each emitter ray
+                for (let i = 0; i < this.emitterState.rays.length; i++) {
+                    const ray = this.emitterState.rays[i];
+                    
+                    // Golden ratio phase modulation
+                    const goldenPhase = (this.time * this.phi + i * Math.PI / 4) % (2 * Math.PI);
+                    
+                    // Frequency adaptation
+                    ray.frequency += adaptRate * 0.1 * Math.sin(goldenPhase) * targetResonance;
+                    ray.frequency = Math.max(0.1, Math.min(10, ray.frequency));
+                    
+                    // Power adaptation based on resonance match
+                    const powerTarget = Math.abs(targetResonance) * (1 + 0.3 * Math.sin(goldenPhase));
+                    ray.power += adaptRate * 0.2 * (powerTarget - ray.power);
+                    ray.power = Math.max(0, Math.min(2, ray.power));
+                    
+                    // Phase adaptation
+                    ray.phase += adaptRate * 0.15 * targetResonance + goldenPhase * 0.1;
+                    ray.phase = ray.phase % (2 * Math.PI);
+                }
+                
+                // Calculate lock strength
+                this.emitterState.lockStrength = Math.abs(targetResonance);
+                this.emitterState.isLocked = this.emitterState.lockStrength > 0.7;
+                
+                if (this.emitterState.isLocked && !this.lockStartTime) {
+                    this.lockStartTime = this.time;
+                }
+            }
+
+            updateVisualization() {
+                // Generate target system state
+                this.targetState.angularVel = this.generateTargetAngularVelocity(this.time);
+                
+                // Update emitter adaptation
+                this.updateEmitterAdaptation();
+                
+                // Store history
+                this.resonanceHistory.push({
+                    time: this.time,
+                    target: [...this.targetState.angularVel],
+                    resonance: this.calculateRTFT(this.targetState.angularVel, this.bestVector)
+                });
+                
+                this.emitterHistory.push({
+                    time: this.time,
+                    rays: this.emitterState.rays.map(r => ({ ...r })),
+                    lockStrength: this.emitterState.lockStrength
+                });
+                
+                if (this.resonanceHistory.length > this.maxHistory) {
+                    this.resonanceHistory.shift();
+                    this.emitterHistory.shift();
+                }
+                
+                this.drawTargetVisualization();
+                this.drawEmitterVisualization();
+                this.updateStatusDisplays();
+                
+                this.time += this.dt;
+            }
+
+            drawTargetVisualization() {
+                const ctx = this.targetCtx;
+                const width = this.targetCanvas.width;
+                const height = this.targetCanvas.height;
+                
+                // Clear with fade
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(0, 0, width, height);
+                
+                if (this.resonanceHistory.length < 2) return;
+                
+                // Draw target resonance profile
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                
+                for (let i = 0; i < this.resonanceHistory.length; i++) {
+                    const data = this.resonanceHistory[i];
+                    const x = (i / this.maxHistory) * width;
+                    const y = height/2 - (data.resonance * height/4);
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+                
+                // Draw angular velocity vector
+                const current = this.targetState.angularVel;
+                const centerX = width - 100;
+                const centerY = 100;
+                const scale = 50;
+                
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX + current[0] * scale, centerY - current[1] * scale);
+                ctx.stroke();
+                
+                // Draw point
+                ctx.fillStyle = '#ffd700';
+                ctx.beginPath();
+                ctx.arc(centerX + current[0] * scale, centerY - current[1] * scale, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+            drawEmitterVisualization() {
+                const ctx = this.emitterCtx;
+                const width = this.emitterCanvas.width;
+                const height = this.emitterCanvas.height;
+                
+                // Clear with fade
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(0, 0, width, height);
+                
+                if (this.emitterHistory.length < 2) return;
+                
+                // Draw emitter response curves
+                const colors = ['#00d4ff', '#ff00ff', '#00ff88'];
+                
+                for (let rayIndex = 0; rayIndex < 3; rayIndex++) {
+                    ctx.strokeStyle = colors[rayIndex];
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    
+                    for (let i = 0; i < this.emitterHistory.length; i++) {
+                        const data = this.emitterHistory[i];
+                        const x = (i / this.maxHistory) * width;
+                        const y = height/2 - (data.rays[rayIndex].power * height/4);
+                        
+                        if (i === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    }
+                    ctx.stroke();
+                }
+                
+                // Draw lock strength indicator
+                ctx.strokeStyle = this.emitterState.isLocked ? '#00ff88' : '#ffaa00';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                
+                for (let i = 0; i < this.emitterHistory.length; i++) {
+                    const data = this.emitterHistory[i];
+                    const x = (i / this.maxHistory) * width;
+                    const y = height - 50 - (data.lockStrength * 40);
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+            }
+
+            updateStatusDisplays() {
+                // Lock status
+                const lockStatus = this.emitterState.isLocked ? "LOCKED" : "SEARCHING";
+                document.getElementById('lockStatus').textContent = lockStatus;
+                
+                // Resonance match
+                const matchPercent = (this.emitterState.lockStrength * 100).toFixed(1);
+                document.getElementById('resonanceMatch').textContent = matchPercent + "%";
+                
+                // Efficiency (higher is better for adaptive system)
+                const efficiency = this.emitterState.isLocked ? 
+                    (85 + this.emitterState.lockStrength * 15).toFixed(0) + "%" : "--";
+                document.getElementById('efficiency').textContent = efficiency;
+                
+                // Lock time
+                const lockTime = this.lockStartTime ? 
+                    (this.time - this.lockStartTime).toFixed(1) + "s" : "0.0s";
+                document.getElementById('lockTime').textContent = lockTime;
+                
+                // Ray displays
+                for (let i = 0; i < 3; i++) {
+                    const ray = this.emitterState.rays[i];
+                    document.getElementById(`ray${i+1}Power`).textContent = `Power: ${ray.power.toFixed(2)}`;
+                    document.getElementById(`ray${i+1}Phase`).textContent = `Phase: ${(ray.phase * 180/Math.PI).toFixed(0)}°`;
+                }
+                
+                // Status detail
+                const statusClass = this.emitterState.isLocked ? 'lock-active' : 
+                                  this.emitterState.lockStrength > 0.3 ? 'lock-searching' : 'lock-lost';
+                const statusText = this.emitterState.isLocked ? 
+                    'Target Locked - Adaptive Resonance Active' :
+                    'Scanning for Resonance Patterns...';
+                
+                const statusDetail = document.getElementById('lockStatusDetail');
+                statusDetail.className = `lock-status ${statusClass}`;
+                statusDetail.textContent = statusText;
+                
+                // Vector displays
+                document.getElementById('currentVector').textContent = 
+                    `[${this.targetState.angularVel[0].toFixed(2)}, ${this.targetState.angularVel[1].toFixed(2)}]`;
+                document.getElementById('bestVector').textContent = 
+                    `[${this.bestVector[0]}, ${this.bestVector[1]}]`;
+                document.getElementById('convergenceRate').textContent = 
+                    this.emitterState.lockStrength.toFixed(3);
+            }
+
+            start() {
+                this.isRunning = true;
+                this.lockStartTime = null;
+                this.animate();
+            }
+
+            stop() {
+                this.isRunning = false;
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+            }
+
+            animate() {
+                if (!this.isRunning) return;
+                
+                this.updateVisualization();
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Global emitter instance
+        const emitter = new RTFTAdaptiveEmitter();
+
+        function startEmitter() {
+            emitter.start();
+        }
+
+        function stopEmitter() {
+            emitter.stop();
+        }
+
+        // Initialize displays
+        window.addEventListener('load', () => {
+            emitter.updateStatusDisplays();
+        });
+    </script>
+</body>
+</html>

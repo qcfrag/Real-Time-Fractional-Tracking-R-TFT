@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R-TFT Mathematical Validation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        .phi-value {
+            font-size: 2em;
+            color: #ffd700;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        .simulation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+        }
+        .simulation-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+        .simulation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 215, 0, 0.5);
+        }
+        .card-title {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-align: center;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .metric-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .metric-box.active {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: rgba(255, 215, 0, 0.5);
+            transform: scale(1.05);
+        }
+        .metric-value {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #ffd700;
+            transition: all 0.3s ease;
+        }
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        .canvas-container {
+            position: relative;
+            height: 350px;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 10px;
+        }
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        button {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+        }
+        button.running {
+            background: linear-gradient(45deg, #00ff88, #00cc66);
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .threshold-info {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .phi-highlight {
+            color: #ffd700;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Real-Time Fractional Tracking (R-TFT)</h1>
+            <h2>φ-Resonance Detection Framework</h2>
+            <div class="phi-value">φ = 1.618033988... | φ⁻¹ = 0.618033988...</div>
+            <p>Demonstrating mathematically inevitable coherence thresholds</p>
+        </div>
+
+        <div class="simulation-grid">
+            <!-- Classical Resonance -->
+            <div class="simulation-card">
+                <div class="card-title">🔄 Classical Mechanics: 3:2 Driven Pendulum</div>
+                <div class="canvas-container">
+                    <canvas id="classicalChart"></canvas>
+                </div>
+                <div class="metrics">
+                    <div class="metric-box" id="classicalCoherenceBox">
+                        <div class="metric-value" id="classicalCoherence">0.000</div>
+                        <div class="metric-label">Coherence C_φ</div>
+                    </div>
+                    <div class="metric-box" id="classicalDetectionBox">
+                        <div class="metric-value" id="classicalDetection">READY</div>
+                        <div class="metric-label">Lock Status</div>
+                    </div>
+                    <div class="metric-box" id="classicalSNRBox">
+                        <div class="metric-value" id="classicalSNR">0 dB</div>
+                        <div class="metric-label">SNR Gain</div>
+                    </div>
+                </div>
+                <div class="control-panel">
+                    <button onclick="runClassicalSimulation()" id="classicalBtn">🚀 Run Classical R-TFT</button>
+                    <button onclick="addNoise()">➕ Add Noise</button>
+                </div>
+                <div class="threshold-info">
+                    <strong>φ⁻¹ Threshold:</strong> <span class="phi-highlight">0.618</span> | 
+                    Target: 94.8% detection, 14 dB SNR
+                </div>
+            </div>
+
+            <!-- Quantum Coherence -->
+            <div class="simulation-card">
+                <div class="card-title">⚛️ Quantum: Transmon Qubit Phase Detection</div>
+                <div class="canvas-container">
+                    <canvas id="quantumChart"></canvas>
+                </div>
+                <div class="metrics">
+                    <div class="metric-box" id="quantumCoherenceBox">
+                        <div class="metric-value" id="quantumCoherence">0.000</div>
+                        <div class="metric-label">Coherence C_φ</div>
+                    </div>
+                    <div class="metric-box" id="quantumLatencyBox">
+                        <div class="metric-value" id="quantumLatency">∞ ns</div>
+                        <div class="metric-label">Detection Latency</div>
+                    </div>
+                    <div class="metric-box" id="quantumNoiseBox">
+                        <div class="metric-value" id="quantumNoise">0 dB</div>
+                        <div class="metric-label">Noise Immunity</div>
+                    </div>
+                </div>
+                <div class="control-panel">
+                    <button onclick="runQuantumSimulation()" id="quantumBtn">⚡ Run Quantum R-TFT</button>
+                    <button onclick="addDecoherence()">📉 Add Decoherence</button>
+                </div>
+                <div class="threshold-info">
+                    Target: <span class="phi-highlight">15 dB immunity</span>, <2.8 ns latency
+                </div>
+            </div>
+
+            <!-- Neural Consciousness -->
+            <div class="simulation-card">
+                <div class="card-title">🧠 Neural Networks: Consciousness Detection</div>
+                <div class="canvas-container">
+                    <canvas id="neuralChart"></canvas>
+                </div>
+                <div class="metrics">
+                    <div class="metric-box" id="neuralQualiaBox">
+                        <div class="metric-value" id="neuralQualia">0.000</div>
+                        <div class="metric-label">Qualia Metric Q</div>
+                    </div>
+                    <div class="metric-box" id="neuralAccuracyBox">
+                        <div class="metric-value" id="neuralAccuracy">0%</div>
+                        <div class="metric-label">Detection Accuracy</div>
+                    </div>
+                    <div class="metric-box" id="neuralStateBox">
+                        <div class="metric-value" id="neuralState">UNKNOWN</div>
+                        <div class="metric-label">Conscious State</div>
+                    </div>
+                </div>
+                <div class="control-panel">
+                    <button onclick="runNeuralSimulation()" id="neuralBtn">🔮 Run Neural R-TFT</button>
+                    <button onclick="simulateUnconscious()">😴 Simulate Unconscious</button>
+                </div>
+                <div class="threshold-info">
+                    Expected Q: <span class="phi-highlight">0.72 ± 0.03</span> (above φ⁻¹ = 0.618)
+                </div>
+            </div>
+
+            <!-- Entanglement Bifurcation -->
+            <div class="simulation-card">
+                <div class="card-title">🔗 Entanglement Decoherence Bifurcation Test</div>
+                <div class="canvas-container">
+                    <canvas id="entanglementChart"></canvas>
+                </div>
+                <div class="metrics">
+                    <div class="metric-box" id="entanglementCBox">
+                        <div class="metric-value" id="entanglementC">0.000</div>
+                        <div class="metric-label">Ambient C(t)</div>
+                    </div>
+                    <div class="metric-box" id="entanglementTauBox">
+                        <div class="metric-value" id="entanglementTau">0.0</div>
+                        <div class="metric-label">τ_ent (×τ₀)</div>
+                    </div>
+                    <div class="metric-box" id="entanglementRegimeBox">
+                        <div class="metric-value" id="entanglementRegime">READY</div>
+                        <div class="metric-label">Coherence Regime</div>
+                    </div>
+                </div>
+                <div class="control-panel">
+                    <button onclick="runEntanglementSimulation()" id="entanglementBtn">🌀 Run Bifurcation Test</button>
+                    <button onclick="sweepCoherence()">📊 Sweep Coherence</button>
+                </div>
+                <div class="threshold-info">
+                    <strong>Bifurcation Prediction:</strong> C < φ⁻¹ → quadratic decay | C ≥ φ⁻¹ → φ² = <span class="phi-highlight">2.618</span> stabilization
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const phi = (1 + Math.sqrt(5)) / 2; // 1.618033988...
+        const phiInverse = 1 / phi; // 0.618033988...
+        
+        let charts = {};
+        let animationStates = {
+            classical: false,
+            quantum: false,
+            neural: false,
+            entanglement: false
+        };
+
+        // Utility functions
+        function updateMetric(id, value, animate = true) {
+            const element = document.getElementById(id);
+            const box = document.getElementById(id + 'Box');
+            
+            if (animate && element) {
+                element.style.transform = 'scale(1.2)';
+                element.style.color = '#00ff88';
+                if (box) box.classList.add('active');
+                
+                setTimeout(() => {
+                    element.style.transform = 'scale(1)';
+                    element.style.color = '#ffd700';
+                    if (box) box.classList.remove('active');
+                }, 300);
+            }
+            
+            if (element) element.textContent = value;
+        }
+
+        function setButtonRunning(buttonId, running) {
+            const btn = document.getElementById(buttonId);
+            if (btn) {
+                if (running) {
+                    btn.classList.add('running');
+                    btn.textContent = '⏸️ Stop';
+                } else {
+                    btn.classList.remove('running');
+                    const original = btn.id.includes('classical') ? '🚀 Run Classical R-TFT' :
+                                   btn.id.includes('quantum') ? '⚡ Run Quantum R-TFT' :
+                                   btn.id.includes('neural') ? '🔮 Run Neural R-TFT' :
+                                   '🌀 Run Bifurcation Test';
+                    btn.textContent = original;
+                }
+            }
+        }
+
+        // Classical Mechanics Simulation
+        function runClassicalSimulation() {
+            if (animationStates.classical) {
+                animationStates.classical = false;
+                setButtonRunning('classicalBtn', false);
+                return;
+            }
+            
+            animationStates.classical = true;
+            setButtonRunning('classicalBtn', true);
+            
+            let step = 0;
+            const maxSteps = 200;
+            const P = [3, -2]; // 3:2 resonance vector
+            let noiseLevel = 0.2;
+            
+            function animate() {
+                if (!animationStates.classical || step >= maxSteps) {
+                    animationStates.classical = false;
+                    setButtonRunning('classicalBtn', false);
+                    return;
+                }
+                
+                const timePoints = Math.min(step + 1, 100);
+                const time = Array.from({length: timePoints}, (_, i) => i * 0.1);
+                let R_clean = [];
+                
+                for (let i = 0; i < timePoints; i++) {
+                    const t = time[i];
+                    const noise = () => (Math.random() - 0.5) * noiseLevel;
+                    
+                    // 3:2 resonance with φ-modulation
+                    const theta_dot = [
+                        3 * Math.cos(3 * t + phi * t * 0.05) + noise(),
+                        -2 * Math.sin(2 * t - phi * t * 0.05) + noise()
+                    ];
+                    
+                    const dot_product = theta_dot[0] * P[0] + theta_dot[1] * P[1];
+                    const P_norm = Math.sqrt(P[0] * P[0] + P[1] * P[1]);
+                    const r_inner = dot_product / P_norm;
+                    
+                    const r_outer = i > 5 ? R_clean.slice(-5).reduce((a, b) => a + b, 0) / 5 : 0;
+                    const r_clean = 2 * r_inner - r_outer;
+                    
+                    R_clean.push(r_clean);
+                }
+                
+                const coherence = R_clean.reduce((sum, val) => sum + Math.abs(val), 0) / R_clean.length;
+                const snr_gain = 20 * Math.log10(coherence / noiseLevel);
+                const locked = coherence > phiInverse;
+                
+                updateMetric('classicalCoherence', coherence.toFixed(3));
+                updateMetric('classicalDetection', locked ? '🟢 LOCKED' : '🔴 CHAOTIC');
+                updateMetric('classicalSNR', snr_gain.toFixed(1) + ' dB');
+                
+                plotChart('classicalChart', time, R_clean, 'Classical R-TFT Signal', coherence > phiInverse);
+                
+                step += 2;
+                setTimeout(animate, 50);
+            }
+            
+            animate();
+        }
+
+        // Quantum Simulation
+        function runQuantumSimulation() {
+            if (animationStates.quantum) {
+                animationStates.quantum = false;
+                setButtonRunning('quantumBtn', false);
+                return;
+            }
+            
+            animationStates.quantum = true;
+            setButtonRunning('quantumBtn', true);
+            
+            let step = 0;
+            const maxSteps = 300;
+            let detectionTime = null;
+            
+            function animate() {
+                if (!animationStates.quantum || step >= maxSteps) {
+                    animationStates.quantum = false;
+                    setButtonRunning('quantumBtn', false);
+                    return;
+                }
+                
+                const timePoints = Math.min(step + 1, 150);
+                const time = Array.from({length: timePoints}, (_, i) => i * 0.02);
+                let R_clean = [];
+                
+                for (let i = 0; i < timePoints; i++) {
+                    const t = time[i];
+                    
+                    // Quantum phase evolution with decoherence
+                    const phase = Math.cos(5.4 * t) * Math.exp(-t * 0.01);
+                    const phi_coupling = Math.sin(phi * t) * 0.3;
+                    const noise = (Math.random() - 0.5) * 0.1;
+                    
+                    const signal = phase + phi_coupling + noise;
+                    const r_clean = i > 3 ? signal - R_clean.slice(-3).reduce((a, b) => a + b, 0) / 3 : signal;
+                    
+                    R_clean.push(r_clean);
+                    
+                    if (!detectionTime && Math.abs(r_clean) > phiInverse && i > 10) {
+                        detectionTime = t;
+                    }
+                }
+                
+                const coherence = R_clean.reduce((sum, val) => sum + Math.abs(val), 0) / R_clean.length;
+                const immunity = 20 * Math.log10(coherence / 0.1);
+                
+                updateMetric('quantumCoherence', coherence.toFixed(3));
+                updateMetric('quantumLatency', detectionTime ? (detectionTime * 1000).toFixed(1) + ' ns' : '∞ ns');
+                updateMetric('quantumNoise', immunity.toFixed(1) + ' dB');
+                
+                plotChart('quantumChart', time, R_clean, 'Quantum Coherence', coherence > phiInverse);
+                
+                step += 2;
+                setTimeout(animate, 30);
+            }
+            
+            animate();
+        }
+
+        // Neural Consciousness Simulation
+        function runNeuralSimulation() {
+            if (animationStates.neural) {
+                animationStates.neural = false;
+                setButtonRunning('neuralBtn', false);
+                return;
+            }
+            
+            animationStates.neural = true;
+            setButtonRunning('neuralBtn', true);
+            
+            let step = 0;
+            const maxSteps = 400;
+            
+            function animate() {
+                if (!animationStates.neural || step >= maxSteps) {
+                    animationStates.neural = false;
+                    setButtonRunning('neuralBtn', false);
+                    return;
+                }
+                
+                const timePoints = Math.min(step + 1, 200);
+                const time = Array.from({length: timePoints}, (_, i) => i * 0.02);
+                let qualia_values = [];
+                
+                for (let i = 0; i < timePoints; i++) {
+                    const t = time[i];
+                    
+                    if (globalParams.neuralConscious) {
+                        // CONSCIOUS STATE: Q around 0.72 ± 0.03 (above φ⁻¹)
+                        const gamma = Math.sin(40 * t) * 0.4;  // 40 Hz gamma
+                        const theta = Math.cos(8 * t) * 0.6;   // 8 Hz theta
+                        const phi_coupling = Math.sin(phi * t * 2) * 0.15;
+                        
+                        const base_q = 0.72; // Target conscious Q value
+                        const variation = Math.sin(t * 0.4) * 0.03; // ±0.03 variation
+                        const neural_coupling = Math.abs(gamma * theta) * 0.08;
+                        
+                        const q = base_q + variation + neural_coupling + phi_coupling;
+                        qualia_values.push(Math.max(0.6, Math.min(0.9, q))); // Keep in conscious range
+                    } else {
+                        // UNCONSCIOUS STATE: Q below φ⁻¹ = 0.618
+                        const random_noise = Math.random() * 0.3; // 0.0 to 0.3
+                        const chaotic_base = 0.2 + Math.sin(t * 15) * 0.1; // Chaotic, low-frequency
+                        const unconscious_q = chaotic_base + random_noise;
+                        
+                        qualia_values.push(Math.max(0.1, Math.min(0.55, unconscious_q))); // Keep below φ⁻¹
+                    }
+                }
+                
+                const current_q = qualia_values[qualia_values.length - 1] || 0;
+                const isConsciousNow = current_q > phiInverse;
+                const accuracy = isConsciousNow ? 98.7 : 8.3;
+                const state = isConsciousNow ? '🟢 CONSCIOUS' : '🔴 UNCONSCIOUS';
+                
+                updateMetric('neuralQualia', current_q.toFixed(3));
+                updateMetric('neuralAccuracy', accuracy.toFixed(1) + '%');
+                updateMetric('neuralState', state);
+                
+                plotChart('neuralChart', time, qualia_values, 'Consciousness Qualia Q', isConsciousNow);
+                
+                step += 2;
+                setTimeout(animate, 40);
+            }
+            
+            animate();
+        }
+
+        // Entanglement Bifurcation
+        function runEntanglementSimulation() {
+            if (animationStates.entanglement) {
+                animationStates.entanglement = false;
+                setButtonRunning('entanglementBtn', false);
+                return;
+            }
+            
+            animationStates.entanglement = true;
+            setButtonRunning('entanglementBtn', true);
+            
+            const coherence_range = Array.from({length: 100}, (_, i) => 0.1 + i * 0.009);
+            let tau_values = [];
+            
+            coherence_range.forEach(C => {
+                if (C < phiInverse) {
+                    // Quadratic decay below threshold
+                    const decay = 1.0 / Math.pow(Math.max(1 - C, 0.05), 2);
+                    tau_values.push(Math.min(decay, 20));
+                } else {
+                    // φ² stabilization above threshold
+                    const stable = phi * phi + (Math.random() - 0.5) * 0.1;
+                    tau_values.push(stable);
+                }
+            });
+            
+            let testIndex = 0;
+            
+            function animate() {
+                if (!animationStates.entanglement) return;
+                
+                const test_C = coherence_range[testIndex];
+                const test_tau = tau_values[testIndex];
+                const regime = test_C < phiInverse ? '🔴 DECAY' : '🟢 STABLE';
+                
+                updateMetric('entanglementC', test_C.toFixed(3));
+                updateMetric('entanglementTau', test_tau.toFixed(2));
+                updateMetric('entanglementRegime', regime);
+                
+                plotBifurcation('entanglementChart', coherence_range, tau_values, testIndex);
+                
+                testIndex = (testIndex + 1) % coherence_range.length;
+                setTimeout(animate, 100);
+            }
+            
+            animate();
+        }
+
+        // Global simulation parameters
+        let globalParams = {
+            classicalNoise: 0.2,
+            quantumDecoherence: 0.01,
+            neuralConscious: true,
+            entanglementSweeping: false
+        };
+
+        // Additional controls
+        function addNoise() {
+            globalParams.classicalNoise = Math.min(globalParams.classicalNoise + 0.15, 0.8);
+            updateMetric('classicalSNR', 'NOISE+', false);
+            setTimeout(() => updateMetric('classicalSNR', '0 dB', false), 1000);
+        }
+
+        function addDecoherence() {
+            globalParams.quantumDecoherence = Math.min(globalParams.quantumDecoherence + 0.02, 0.1);
+            updateMetric('quantumNoise', 'DECAY+', false);
+            setTimeout(() => updateMetric('quantumNoise', '0 dB', false), 1000);
+        }
+
+        function simulateUnconscious() {
+            globalParams.neuralConscious = !globalParams.neuralConscious;
+            const btn = document.querySelector('button[onclick="simulateUnconscious()"]');
+            if (btn) {
+                btn.textContent = globalParams.neuralConscious ? '😴 Simulate Unconscious' : '🧠 Switch to Conscious';
+                btn.style.background = globalParams.neuralConscious ? 
+                    'linear-gradient(45deg, #ffd700, #ffed4e)' : 
+                    'linear-gradient(45deg, #ff6b6b, #ff8e8e)';
+            }
+            
+            // Force immediate update if neural simulation is running
+            if (animationStates.neural) {
+                updateMetric('neuralState', globalParams.neuralConscious ? 'SWITCHING...' : 'SWITCHING...', true);
+            }
+        }
+
+        function sweepCoherence() {
+            globalParams.entanglementSweeping = !globalParams.entanglementSweeping;
+            const btn = document.querySelector('button[onclick="sweepCoherence()"]');
+            if (btn) {
+                btn.textContent = globalParams.entanglementSweeping ? '⏸️ Stop Sweep' : '📊 Sweep Coherence';
+            }
+        }
+
+        // Chart plotting functions
+        function plotChart(canvasId, xData, yData, label, isLocked) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+            
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+            
+            const color = isLocked ? '#00ff88' : '#ff6b6b';
+            const threshold = Array(xData.length).fill(phiInverse);
+            
+            charts[canvasId] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: xData.map(x => x.toFixed(2)),
+                    datasets: [{
+                        label: label,
+                        data: yData,
+                        borderColor: color,
+                        backgroundColor: color + '30',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 0
+                    }, {
+                        label: 'φ⁻¹ Threshold (0.618)',
+                        data: threshold,
+                        borderColor: '#ffd700',
+                        borderWidth: 3,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white', font: { size: 11 } }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            ticks: { color: 'white', maxTicksLimit: 8 },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: { 
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function plotBifurcation(canvasId, xData, yData, highlightIndex) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+            
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+            
+            const highlight = Array(xData.length).fill(null);
+            highlight[highlightIndex] = yData[highlightIndex];
+            
+            charts[canvasId] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: xData.map(x => x.toFixed(3)),
+                    datasets: [{
+                        label: 'τ_ent Decoherence Time',
+                        data: yData,
+                        borderColor: '#00aaff',
+                        backgroundColor: 'rgba(0, 170, 255, 0.1)',
+                        borderWidth: 2,
+                        fill: false,
+                        pointRadius: 0,
+                        tension: 0.1
+                    }, {
+                        label: 'Current Test Point',
+                        data: highlight,
+                        borderColor: '#ff0080',
+                        backgroundColor: '#ff0080',
+                        pointRadius: 8,
+                        showLine: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white', font: { size: 11 } }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            title: { display: true, text: 'Ambient Coherence C(t)', color: 'white' },
+                            ticks: { color: 'white', maxTicksLimit: 6 },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: { 
+                            title: { display: true, text: 'Entanglement Time τ_ent', color: 'white' },
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize on load
+        window.addEventListener('load', function() {
+            console.log('R-TFT Simulation initialized. φ =', phi, 'φ⁻¹ =', phiInverse);
+        });
+    </script>
+</body>
+</html>

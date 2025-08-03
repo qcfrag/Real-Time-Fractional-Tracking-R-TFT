@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R-TFT Three-Body Chaos Simulation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #4fc3f7;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(79, 195, 247, 0.5);
+        }
+        .simulation-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+        }
+        .panel h3 {
+            color: #4fc3f7;
+            margin-top: 0;
+            font-size: 1.3em;
+        }
+        canvas {
+            border: 2px solid rgba(79, 195, 247, 0.5);
+            border-radius: 10px;
+            background: #000;
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.2);
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        button {
+            background: linear-gradient(45deg, #4fc3f7, #29b6f6);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 195, 247, 0.3);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 195, 247, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .metric-card {
+            background: rgba(79, 195, 247, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+        }
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4fc3f7;
+            margin-bottom: 5px;
+        }
+        .metric-label {
+            font-size: 0.9em;
+            color: #bbb;
+        }
+        .status {
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .status.detecting {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+        .status.monitoring {
+            background: rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+        .status.chaotic {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+        .parameter-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .param-group {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .param-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4fc3f7;
+            font-weight: bold;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+        .math-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #4fc3f7;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Real-Time Fractional Tracking (R-TFT) in 3-Body Chaos</h1>
+        
+        <div class="simulation-grid">
+            <div class="panel">
+                <h3>Three-Body Gravitational System</h3>
+                <canvas id="orbitCanvas" width="500" height="400"></canvas>
+                <div class="controls">
+                    <button onclick="toggleSimulation()">Start/Stop</button>
+                    <button onclick="resetSimulation()">Reset</button>
+                    <button onclick="addChaos()">Add Chaos</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h3>R-TFT Signal Analysis</h3>
+                <canvas id="signalCanvas" width="500" height="400"></canvas>
+                <div id="detectionStatus" class="status monitoring">Monitoring...</div>
+            </div>
+        </div>
+        
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value" id="rValue">0.00</div>
+                <div class="metric-label">R-TFT Score</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="rClean">0.00</div>
+                <div class="metric-label">R Clean</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="snrValue">0.0</div>
+                <div class="metric-label">SNR (dB)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="detectionCount">0</div>
+                <div class="metric-label">Detections</div>
+            </div>
+        </div>
+        
+        <div class="parameter-controls">
+            <div class="param-group">
+                <label>Fractional Vector P:</label>
+                <input type="range" id="p1" min="-5" max="5" value="3" step="0.1" onchange="updateP()">
+                <span>P₁: <span id="p1Val">3</span></span>
+                <input type="range" id="p2" min="-5" max="5" value="-2" step="0.1" onchange="updateP()">
+                <span>P₂: <span id="p2Val">-2</span></span>
+            </div>
+            <div class="param-group">
+                <label>Detection Threshold:</label>
+                <input type="range" id="threshold" min="0.1" max="2.0" value="0.65" step="0.01" onchange="updateThreshold()">
+                <span>Threshold: <span id="threshVal">0.65</span></span>
+            </div>
+            <div class="param-group">
+                <label>Noise Level:</label>
+                <input type="range" id="noiseLevel" min="0" max="0.1" value="0.01" step="0.001" onchange="updateNoise()">
+                <span>Noise: <span id="noiseVal">0.01</span></span>
+            </div>
+        </div>
+        
+        <div class="math-display">
+            <strong>R-TFT Core Equations:</strong><br>
+            R(t) = θ̇(t) · P / ||P||<br>
+            R_clean(t) = 2R_inner(t) - R_outer(t)<br>
+            C_thresh = 0.65 + 0.05 * log₁₀(||P||)
+        </div>
+    </div>
+
+    <script>
+        // Simulation state
+        let running = false;
+        let time = 0;
+        let dt = 0.01;
+        let G = 1.0;
+        
+        // Three bodies
+        let bodies = [
+            { mass: 1.0, pos: [0.97000436, -0.24308753], vel: [0.466203685, 0.43236573], color: '#ff6b6b' },
+            { mass: 1.0, pos: [-0.97000436, 0.24308753], vel: [0.466203685, 0.43236573], color: '#4ecdc4' },
+            { mass: 1.0, pos: [0, 0], vel: [-0.93240737, -0.86473146], color: '#45b7d1' }
+        ];
+        
+        // R-TFT parameters
+        let P = [3, -2]; // Fractional tracking vector
+        let threshold = 0.65;
+        let noiseLevel = 0.01;
+        
+        // Data storage
+        let angleHistory = [];
+        let rHistory = [];
+        let rCleanHistory = [];
+        let outerStats = { mean: 0, std: 1, alpha: 0.95 };
+        let detectionCount = 0;
+        
+        // Canvas contexts
+        const orbitCtx = document.getElementById('orbitCanvas').getContext('2d');
+        const signalCtx = document.getElementById('signalCanvas').getContext('2d');
+        
+        // Initialize simulation
+        function init() {
+            updateDisplay();
+            drawOrbits();
+            drawSignal();
+        }
+        
+        // Three-body gravitational force calculation
+        function calculateForces() {
+            let forces = bodies.map(() => [0, 0]);
+            
+            for (let i = 0; i < bodies.length; i++) {
+                for (let j = i + 1; j < bodies.length; j++) {
+                    let dx = bodies[j].pos[0] - bodies[i].pos[0];
+                    let dy = bodies[j].pos[1] - bodies[i].pos[1];
+                    let r = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Avoid singularities
+                    if (r < 0.01) r = 0.01;
+                    
+                    let force = G * bodies[i].mass * bodies[j].mass / (r * r * r);
+                    
+                    forces[i][0] += force * dx;
+                    forces[i][1] += force * dy;
+                    forces[j][0] -= force * dx;
+                    forces[j][1] -= force * dy;
+                }
+            }
+            
+            return forces;
+        }
+        
+        // Numerical integration (Verlet method)
+        function integrate() {
+            let forces = calculateForces();
+            
+            for (let i = 0; i < bodies.length; i++) {
+                let ax = forces[i][0] / bodies[i].mass;
+                let ay = forces[i][1] / bodies[i].mass;
+                
+                // Add noise if specified
+                if (noiseLevel > 0) {
+                    ax += (Math.random() - 0.5) * noiseLevel;
+                    ay += (Math.random() - 0.5) * noiseLevel;
+                }
+                
+                bodies[i].vel[0] += ax * dt;
+                bodies[i].vel[1] += ay * dt;
+                bodies[i].pos[0] += bodies[i].vel[0] * dt;
+                bodies[i].pos[1] += bodies[i].vel[1] * dt;
+            }
+        }
+        
+        // Calculate angular coordinates and velocities
+        function calculateAngularData() {
+            let angles = [];
+            let angularVels = [];
+            
+            for (let i = 0; i < bodies.length; i++) {
+                let angle = Math.atan2(bodies[i].pos[1], bodies[i].pos[0]);
+                angles.push(angle);
+                
+                // Calculate angular velocity from position and velocity
+                let r = Math.sqrt(bodies[i].pos[0] * bodies[i].pos[0] + bodies[i].pos[1] * bodies[i].pos[1]);
+                let angVel = (bodies[i].pos[0] * bodies[i].vel[1] - bodies[i].pos[1] * bodies[i].vel[0]) / (r * r);
+                angularVels.push(angVel);
+            }
+            
+            return { angles, angularVels };
+        }
+        
+        // Core R-TFT calculation
+        function calculateRTFT(angularVels) {
+            // Use first two bodies for the projection
+            let theta_dot = [angularVels[0], angularVels[1]];
+            
+            // Calculate dot product with fractional vector P
+            let numerator = theta_dot[0] * P[0] + theta_dot[1] * P[1];
+            let denominator = Math.sqrt(P[0] * P[0] + P[1] * P[1]);
+            
+            let R = numerator / denominator;
+            return R;
+        }
+        
+        // Adaptive background subtraction
+        function adaptiveBackgroundSubtraction(R_inner) {
+            // Update outer statistics with exponential decay
+            outerStats.mean = outerStats.alpha * outerStats.mean + (1 - outerStats.alpha) * R_inner;
+            
+            // Calculate cleaned signal
+            let R_clean = 2 * R_inner - outerStats.mean;
+            
+            return R_clean;
+        }
+        
+        // Detection logic
+        function detectResonance(R_clean) {
+            let P_norm = Math.sqrt(P[0] * P[0] + P[1] * P[1]);
+            let dynamicThreshold = 0.65 + 0.05 * Math.log10(P_norm);
+            
+            if (Math.abs(R_clean) > dynamicThreshold) {
+                detectionCount++;
+                document.getElementById('detectionStatus').className = 'status detecting';
+                document.getElementById('detectionStatus').textContent = `Resonance Detected! (${detectionCount})`;
+                
+                // Reset status after 1 second
+                setTimeout(() => {
+                    document.getElementById('detectionStatus').className = 'status monitoring';
+                    document.getElementById('detectionStatus').textContent = 'Monitoring...';
+                }, 1000);
+                
+                return true;
+            }
+            
+            return false;
+        }
+        
+        // Calculate SNR
+        function calculateSNR(signal, noise) {
+            let signalPower = signal.reduce((sum, val) => sum + val * val, 0) / signal.length;
+            let noisePower = noise.reduce((sum, val) => sum + val * val, 0) / noise.length;
+            
+            if (noisePower === 0) return 0;
+            return 10 * Math.log10(signalPower / noisePower);
+        }
+        
+        // Main simulation step
+        function step() {
+            if (!running) return;
+            
+            integrate();
+            
+            let { angles, angularVels } = calculateAngularData();
+            let R_inner = calculateRTFT(angularVels);
+            let R_clean = adaptiveBackgroundSubtraction(R_inner);
+            
+            // Store data for visualization
+            angleHistory.push(angles);
+            rHistory.push(R_inner);
+            rCleanHistory.push(R_clean);
+            
+            // Keep only last 1000 points
+            if (angleHistory.length > 1000) {
+                angleHistory.shift();
+                rHistory.shift();
+                rCleanHistory.shift();
+            }
+            
+            // Check for resonance detection
+            detectResonance(R_clean);
+            
+            // Update display
+            updateMetrics(R_inner, R_clean);
+            
+            time += dt;
+            
+            // Continue simulation
+            requestAnimationFrame(step);
+        }
+        
+        // Update metrics display
+        function updateMetrics(R_inner, R_clean) {
+            document.getElementById('rValue').textContent = R_inner.toFixed(3);
+            document.getElementById('rClean').textContent = R_clean.toFixed(3);
+            document.getElementById('detectionCount').textContent = detectionCount;
+            
+            // Calculate SNR if we have enough data
+            if (rHistory.length > 100) {
+                let signal = rCleanHistory.slice(-100);
+                let noise = rHistory.slice(-100).map((val, i) => val - rCleanHistory[rCleanHistory.length - 100 + i]);
+                let snr = calculateSNR(signal, noise);
+                document.getElementById('snrValue').textContent = snr.toFixed(1);
+            }
+        }
+        
+        // Draw orbital motion
+        function drawOrbits() {
+            orbitCtx.clearRect(0, 0, 500, 400);
+            
+            // Draw center
+            orbitCtx.fillStyle = '#333';
+            orbitCtx.fillRect(248, 198, 4, 4);
+            
+            // Draw trails
+            if (angleHistory.length > 1) {
+                for (let i = 0; i < bodies.length; i++) {
+                    orbitCtx.strokeStyle = bodies[i].color + '40';
+                    orbitCtx.lineWidth = 1;
+                    orbitCtx.beginPath();
+                    
+                    for (let j = Math.max(0, angleHistory.length - 200); j < angleHistory.length; j++) {
+                        let x = 250 + bodies[i].pos[0] * 100;
+                        let y = 200 + bodies[i].pos[1] * 100;
+                        
+                        if (j === Math.max(0, angleHistory.length - 200)) {
+                            orbitCtx.moveTo(x, y);
+                        } else {
+                            orbitCtx.lineTo(x, y);
+                        }
+                    }
+                    orbitCtx.stroke();
+                }
+            }
+            
+            // Draw bodies
+            for (let i = 0; i < bodies.length; i++) {
+                let x = 250 + bodies[i].pos[0] * 100;
+                let y = 200 + bodies[i].pos[1] * 100;
+                
+                orbitCtx.fillStyle = bodies[i].color;
+                orbitCtx.beginPath();
+                orbitCtx.arc(x, y, 6, 0, 2 * Math.PI);
+                orbitCtx.fill();
+            }
+            
+            if (running) {
+                requestAnimationFrame(drawOrbits);
+            }
+        }
+        
+        // Draw signal analysis
+        function drawSignal() {
+            signalCtx.clearRect(0, 0, 500, 400);
+            
+            if (rHistory.length < 2) return;
+            
+            // Draw grid
+            signalCtx.strokeStyle = '#333';
+            signalCtx.lineWidth = 0.5;
+            for (let i = 0; i <= 10; i++) {
+                let y = i * 40;
+                signalCtx.beginPath();
+                signalCtx.moveTo(0, y);
+                signalCtx.lineTo(500, y);
+                signalCtx.stroke();
+            }
+            
+            // Draw threshold lines
+            let P_norm = Math.sqrt(P[0] * P[0] + P[1] * P[1]);
+            let dynamicThreshold = 0.65 + 0.05 * Math.log10(P_norm);
+            let threshY = 200 - dynamicThreshold * 100;
+            
+            signalCtx.strokeStyle = '#ff6b6b';
+            signalCtx.lineWidth = 2;
+            signalCtx.setLineDash([5, 5]);
+            signalCtx.beginPath();
+            signalCtx.moveTo(0, threshY);
+            signalCtx.lineTo(500, threshY);
+            signalCtx.moveTo(0, 400 - threshY);
+            signalCtx.lineTo(500, 400 - threshY);
+            signalCtx.stroke();
+            signalCtx.setLineDash([]);
+            
+            // Draw R_clean signal
+            signalCtx.strokeStyle = '#4fc3f7';
+            signalCtx.lineWidth = 2;
+            signalCtx.beginPath();
+            
+            let startIdx = Math.max(0, rCleanHistory.length - 500);
+            for (let i = startIdx; i < rCleanHistory.length; i++) {
+                let x = (i - startIdx) * (500 / 500);
+                let y = 200 - rCleanHistory[i] * 100;
+                
+                if (i === startIdx) {
+                    signalCtx.moveTo(x, y);
+                } else {
+                    signalCtx.lineTo(x, y);
+                }
+            }
+            signalCtx.stroke();
+            
+            // Draw raw R signal
+            signalCtx.strokeStyle = '#ffc107';
+            signalCtx.lineWidth = 1;
+            signalCtx.beginPath();
+            
+            for (let i = startIdx; i < rHistory.length; i++) {
+                let x = (i - startIdx) * (500 / 500);
+                let y = 200 - rHistory[i] * 100;
+                
+                if (i === startIdx) {
+                    signalCtx.moveTo(x, y);
+                } else {
+                    signalCtx.lineTo(x, y);
+                }
+            }
+            signalCtx.stroke();
+            
+            if (running) {
+                requestAnimationFrame(drawSignal);
+            }
+        }
+        
+        // Control functions
+        function toggleSimulation() {
+            running = !running;
+            if (running) {
+                step();
+                drawOrbits();
+                drawSignal();
+            }
+        }
+        
+        function resetSimulation() {
+            running = false;
+            time = 0;
+            detectionCount = 0;
+            
+            // Reset bodies to initial conditions
+            bodies = [
+                { mass: 1.0, pos: [0.97000436, -0.24308753], vel: [0.466203685, 0.43236573], color: '#ff6b6b' },
+                { mass: 1.0, pos: [-0.97000436, 0.24308753], vel: [0.466203685, 0.43236573], color: '#4ecdc4' },
+                { mass: 1.0, pos: [0, 0], vel: [-0.93240737, -0.86473146], color: '#45b7d1' }
+            ];
+            
+            // Clear data
+            angleHistory = [];
+            rHistory = [];
+            rCleanHistory = [];
+            outerStats = { mean: 0, std: 1, alpha: 0.95 };
+            
+            updateDisplay();
+        }
+        
+        function addChaos() {
+            // Add random perturbation to create chaos
+            for (let i = 0; i < bodies.length; i++) {
+                bodies[i].vel[0] += (Math.random() - 0.5) * 0.1;
+                bodies[i].vel[1] += (Math.random() - 0.5) * 0.1;
+            }
+        }
+        
+        // Parameter update functions
+        function updateP() {
+            P[0] = parseFloat(document.getElementById('p1').value);
+            P[1] = parseFloat(document.getElementById('p2').value);
+            document.getElementById('p1Val').textContent = P[0].toFixed(1);
+            document.getElementById('p2Val').textContent = P[1].toFixed(1);
+        }
+        
+        function updateThreshold() {
+            threshold = parseFloat(document.getElementById('threshold').value);
+            document.getElementById('threshVal').textContent = threshold.toFixed(2);
+        }
+        
+        function updateNoise() {
+            noiseLevel = parseFloat(document.getElementById('noiseLevel').value);
+            document.getElementById('noiseVal').textContent = noiseLevel.toFixed(3);
+        }
+        
+        function updateDisplay() {
+            updateP();
+            updateThreshold();
+            updateNoise();
+        }
+        
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

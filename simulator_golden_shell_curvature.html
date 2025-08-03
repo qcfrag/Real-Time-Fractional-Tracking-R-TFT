@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golden Shell Curvature Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at 20% 50%, #0a0a0a 0%, #1a1a2e 40%, #16213e 80%, #0f1419 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 3.2em;
+            background: linear-gradient(45deg, #ffd700, #ff6b35, #00d4ff, #ff00ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            text-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
+        }
+
+        .subtitle {
+            color: #ffd700;
+            font-size: 1.3em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .metrics-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            color: #cccccc;
+            font-size: 0.9em;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .viz-panel {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 25px;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .viz-panel h3 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            text-align: center;
+        }
+
+        canvas {
+            width: 100%;
+            max-width: 700px;
+            height: 450px;
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .control-group h4 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            min-width: 140px;
+            color: #cccccc;
+            font-size: 0.9em;
+        }
+
+        input, select, button {
+            padding: 10px 15px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ffd700, #ff6b35);
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+        }
+
+        .shell-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .shell-info {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid #ffd700;
+            backdrop-filter: blur(10px);
+        }
+
+        .shell-radius {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .shell-delay {
+            color: #00d4ff;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .curvature-field {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 25px;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .curvature-field h3 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            text-align: center;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .field-cell {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .ethics-notice {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.4);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            color: #ffd700;
+            font-size: 1.1em;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            .shell-display {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Golden Shell Curvature Detection</h1>
+            <p class="subtitle">Real-Time Fractional Tracking • φ-Spaced Layers • Coherence Geometry</p>
+            <p class="subtitle">Non-Metric Physics • Temporal Resonance • Phase-Based Curvature</p>
+        </div>
+
+        <div class="metrics-bar">
+            <div class="metric-card">
+                <div class="metric-value" id="curvatureSignal">0.00</div>
+                <div class="metric-label">Curvature Signal κφ</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="timingError">0.000</div>
+                <div class="metric-label">Timing Error (s)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="relativeError">0.0%</div>
+                <div class="metric-label">Relative Error</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="shellCount">10</div>
+                <div class="metric-label">Active Shells</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="phaseRange">0-0s</div>
+                <div class="metric-label">Phase Delay Range</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="viz-panel">
+                <h3>Golden Shell Spacing & Phase Delays</h3>
+                <canvas id="shellCanvas"></canvas>
+            </div>
+            <div class="viz-panel">
+                <h3>R-TFT Curvature Signal Processing</h3>
+                <canvas id="signalCanvas"></canvas>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <h4>Curvature Parameters</h4>
+                <div class="input-row">
+                    <label>Curvature Factor (a):</label>
+                    <input type="range" id="curvatureFactor" min="0.1" max="2.0" step="0.1" value="0.5">
+                    <span id="curvatureValue">0.5</span>
+                </div>
+                <div class="input-row">
+                    <label>Noise Level:</label>
+                    <input type="range" id="noiseLevel" min="0" max="1" step="0.05" value="0.1">
+                    <span id="noiseValue">0.1</span>
+                </div>
+                <div class="input-row">
+                    <label>Shell Count:</label>
+                    <input type="range" id="shellCountSlider" min="5" max="20" step="1" value="10">
+                    <span id="shellCountValue">10</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h4>R-TFT Processing</h4>
+                <div class="input-row">
+                    <label>Smoothing Factor:</label>
+                    <input type="range" id="smoothingFactor" min="0.1" max="3.0" step="0.1" value="1.0">
+                    <span id="smoothingValue">1.0</span>
+                </div>
+                <div class="input-row">
+                    <label>Background Window:</label>
+                    <input type="range" id="backgroundWindow" min="3" max="15" step="1" value="5">
+                    <span id="backgroundValue">5</span>
+                </div>
+                <div class="input-row">
+                    <button onclick="startDetection()">Start Detection</button>
+                    <button onclick="stopDetection()">Stop</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="shell-display" id="shellDisplay">
+            <!-- Shell information will be populated here -->
+        </div>
+
+        <div class="curvature-field">
+            <h3>Observer Pair Mesh - Curvature Field κφ</h3>
+            <div class="field-grid" id="fieldGrid">
+                <!-- Field cells will be populated here -->
+            </div>
+            <div style="text-align: center; color: #cccccc; font-size: 0.9em;">
+                Distributed curvature detection via temporal coherence acceleration
+            </div>
+        </div>
+
+        <div class="ethics-notice">
+            <strong>⚠ REL-1.0 Compliance Active ⚠</strong><br>
+            This Golden Shell Curvature Detection system is released for peaceful, scientific, and educational purposes only.<br>
+            "Let this remain a gift to human unity, not its downfall."
+        </div>
+    </div>
+
+    <script>
+        class GoldenShellCurvatureDetector {
+            constructor() {
+                this.isRunning = false;
+                this.animationId = null;
+                
+                // Golden ratio
+                this.phi = (1 + Math.sqrt(5)) / 2;
+                
+                // System parameters
+                this.curvatureFactor = 0.5;
+                this.noiseLevel = 0.1;
+                this.shellCount = 10;
+                this.smoothingFactor = 1.0;
+                this.backgroundWindow = 5;
+                
+                // Data arrays
+                this.shells = [];
+                this.phaseDelays = [];
+                this.deltaT = [];
+                this.delta2T = [];
+                this.rClean1 = [];
+                this.rClean2 = [];
+                this.curvatureSignal = 0;
+                this.timingError = 0;
+                this.relativeError = 0;
+                
+                this.initCanvases();
+                this.initEventListeners();
+                this.generateShells();
+                this.updateDisplay();
+            }
+
+            initCanvases() {
+                this.shellCanvas = document.getElementById('shellCanvas');
+                this.signalCanvas = document.getElementById('signalCanvas');
+                this.shellCtx = this.shellCanvas.getContext('2d');
+                this.signalCtx = this.signalCanvas.getContext('2d');
+                
+                this.shellCanvas.width = 700;
+                this.shellCanvas.height = 450;
+                this.signalCanvas.width = 700;
+                this.signalCanvas.height = 450;
+            }
+
+            initEventListeners() {
+                document.getElementById('curvatureFactor').addEventListener('input', (e) => {
+                    this.curvatureFactor = parseFloat(e.target.value);
+                    document.getElementById('curvatureValue').textContent = e.target.value;
+                    this.generateShells();
+                });
+                
+                document.getElementById('noiseLevel').addEventListener('input', (e) => {
+                    this.noiseLevel = parseFloat(e.target.value);
+                    document.getElementById('noiseValue').textContent = e.target.value;
+                    this.generateShells();
+                });
+                
+                document.getElementById('shellCountSlider').addEventListener('input', (e) => {
+                    this.shellCount = parseInt(e.target.value);
+                    document.getElementById('shellCountValue').textContent = e.target.value;
+                    this.generateShells();
+                });
+                
+                document.getElementById('smoothingFactor').addEventListener('input', (e) => {
+                    this.smoothingFactor = parseFloat(e.target.value);
+                    document.getElementById('smoothingValue').textContent = e.target.value;
+                });
+                
+                document.getElementById('backgroundWindow').addEventListener('input', (e) => {
+                    this.backgroundWindow = parseInt(e.target.value);
+                    document.getElementById('backgroundValue').textContent = e.target.value;
+                });
+            }
+
+            generateShells() {
+                this.shells = [];
+                this.phaseDelays = [];
+                
+                const r0 = 1.0; // Base radius
+                
+                for (let n = 0; n < this.shellCount; n++) {
+                    // Golden ratio spacing: rn = r0 * φ^n
+                    const radius = r0 * Math.pow(this.phi, n);
+                    
+                    // Phase delay model: tn = a * rn^2 + noise
+                    const baseDelay = this.curvatureFactor * radius * radius;
+                    const noise = (Math.random() - 0.5) * this.noiseLevel;
+                    const phaseDelay = baseDelay + noise;
+                    
+                    this.shells.push({
+                        index: n,
+                        radius: radius,
+                        phaseDelay: phaseDelay,
+                        baseDelay: baseDelay,
+                        noise: noise
+                    });
+                    
+                    this.phaseDelays.push(phaseDelay);
+                }
+                
+                this.calculateDifferentials();
+                this.updateDisplay();
+            }
+
+            calculateDifferentials() {
+                this.deltaT = [];
+                this.delta2T = [];
+                
+                // First order differentials: Δtn = tn+1 - tn
+                for (let i = 0; i < this.phaseDelays.length - 1; i++) {
+                    this.deltaT.push(this.phaseDelays[i + 1] - this.phaseDelays[i]);
+                }
+                
+                // Second order differentials: Δ²tn = Δtn+1 - Δtn
+                for (let i = 0; i < this.deltaT.length - 1; i++) {
+                    this.delta2T.push(this.deltaT[i + 1] - this.deltaT[i]);
+                }
+                
+                this.applyRTFTSmoothing();
+            }
+
+            applyRTFTSmoothing() {
+                // Apply R-TFT background subtraction: Rclean = 2Rinner - Router
+                this.rClean1 = this.backgroundSubtraction(this.deltaT);
+                this.rClean2 = this.backgroundSubtraction(this.delta2T);
+                
+                // Calculate curvature metric: κφ = |R(2)clean - R(1)clean|
+                if (this.rClean1.length > 0 && this.rClean2.length > 0) {
+                    const r1Mean = this.rClean1.reduce((a, b) => a + b, 0) / this.rClean1.length;
+                    const r2Mean = this.rClean2.reduce((a, b) => a + b, 0) / this.rClean2.length;
+                    this.curvatureSignal = Math.abs(r2Mean - r1Mean);
+                }
+                
+                // Calculate timing error
+                this.timingError = this.calculateTimingError();
+                this.relativeError = this.timingError / Math.max(...this.phaseDelays) * 100;
+            }
+
+            backgroundSubtraction(data) {
+                if (data.length < this.backgroundWindow) return data;
+                
+                const cleaned = [];
+                const windowSize = this.backgroundWindow;
+                
+                for (let i = windowSize; i < data.length - windowSize; i++) {
+                    // Inner value
+                    const rInner = data[i];
+                    
+                    // Outer value (background)
+                    let rOuter = 0;
+                    for (let j = Math.max(0, i - windowSize); j <= Math.min(data.length - 1, i + windowSize); j++) {
+                        if (j !== i) rOuter += data[j];
+                    }
+                    rOuter /= (2 * windowSize);
+                    
+                    // Apply R-TFT formula
+                    const rClean = 2 * rInner - rOuter;
+                    cleaned.push(rClean);
+                }
+                
+                return cleaned;
+            }
+
+            calculateTimingError() {
+                if (this.shells.length === 0) return 0;
+                
+                let totalError = 0;
+                for (let shell of this.shells) {
+                    totalError += Math.abs(shell.noise);
+                }
+                return totalError / this.shells.length;
+            }
+
+            updateDisplay() {
+                // Update metrics
+                document.getElementById('curvatureSignal').textContent = this.curvatureSignal.toFixed(2);
+                document.getElementById('timingError').textContent = this.timingError.toFixed(4);
+                document.getElementById('relativeError').textContent = this.relativeError.toFixed(3) + '%';
+                document.getElementById('shellCount').textContent = this.shellCount;
+                
+                if (this.phaseDelays.length > 0) {
+                    const minDelay = Math.min(...this.phaseDelays);
+                    const maxDelay = Math.max(...this.phaseDelays);
+                    document.getElementById('phaseRange').textContent = 
+                        `${minDelay.toFixed(1)}-${maxDelay.toFixed(0)}s`;
+                }
+                
+                this.updateShellDisplay();
+                this.updateFieldDisplay();
+                this.drawVisualization();
+            }
+
+            updateShellDisplay() {
+                const container = document.getElementById('shellDisplay');
+                container.innerHTML = '';
+                
+                this.shells.forEach((shell, index) => {
+                    const shellDiv = document.createElement('div');
+                    shellDiv.className = 'shell-info';
+                    shellDiv.innerHTML = `
+                        <div class="shell-radius">Shell ${index + 1}</div>
+                        <div>r = ${shell.radius.toFixed(2)}</div>
+                        <div class="shell-delay">Delay: ${shell.phaseDelay.toFixed(2)}s</div>
+                        <div style="font-size: 0.8em; color: #888;">φ^${index} scaling</div>
+                    `;
+                    container.appendChild(shellDiv);
+                });
+            }
+
+            updateFieldDisplay() {
+                const grid = document.getElementById('fieldGrid');
+                grid.innerHTML = '';
+                
+                // Generate 5x5 observer pair mesh
+                for (let i = 0; i < 25; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'field-cell';
+                    
+                    // Simulate curvature field values
+                    const fieldValue = this.curvatureSignal * (0.5 + 0.5 * Math.sin(i * 0.5));
+                    const intensity = Math.min(1, fieldValue / 300);
+                    
+                    cell.style.backgroundColor = `rgba(255, 215, 0, ${intensity})`;
+                    cell.style.color = intensity > 0.5 ? '#000' : '#fff';
+                    cell.textContent = fieldValue.toFixed(0);
+                    
+                    grid.appendChild(cell);
+                }
+            }
+
+            drawVisualization() {
+                this.drawShellVisualization();
+                this.drawSignalVisualization();
+            }
+
+            drawShellVisualization() {
+                const ctx = this.shellCtx;
+                const width = this.shellCanvas.width;
+                const height = this.shellCanvas.height;
+                
+                // Clear canvas
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(0, 0, width, height);
+                
+                if (this.shells.length === 0) return;
+                
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const maxRadius = Math.min(width, height) / 2 - 50;
+                const maxShellRadius = Math.max(...this.shells.map(s => s.radius));
+                
+                // Draw shells as concentric circles
+                this.shells.forEach((shell, index) => {
+                    const displayRadius = (shell.radius / maxShellRadius) * maxRadius;
+                    
+                    // Shell circle
+                    ctx.strokeStyle = `rgba(255, 215, 0, ${0.3 + index * 0.05})`;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, displayRadius, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    
+                    // Phase delay visualization
+                    const delayIntensity = shell.phaseDelay / Math.max(...this.phaseDelays);
+                    const angle = (index / this.shells.length) * 2 * Math.PI;
+                    const x = centerX + Math.cos(angle) * displayRadius;
+                    const y = centerY + Math.sin(angle) * displayRadius;
+                    
+                    ctx.fillStyle = `rgba(0, 212, 255, ${delayIntensity})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 6, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    // Label
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '12px Arial';
+                    ctx.fillText(`φ^${index}`, x + 10, y + 5);
+                });
+                
+                // Center point
+                ctx.fillStyle = '#ffd700';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 4, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Title
+                ctx.fillStyle = '#ffd700';
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText('Golden Shell Spacing', 20, 30);
+                ctx.font = '12px Arial';
+                ctx.fillText('rn = r0 · φ^n', 20, 50);
+            }
+
+            drawSignalVisualization() {
+                const ctx = this.signalCtx;
+                const width = this.signalCanvas.width;
+                const height = this.signalCanvas.height;
+                
+                // Clear canvas
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(0, 0, width, height);
+                
+                if (this.rClean1.length === 0 || this.rClean2.length === 0) return;
+                
+                // Draw R-TFT cleaned signals
+                this.drawSignalSeries(ctx, this.rClean1, '#00d4ff', 'R¹clean (Δt)', height / 3);
+                this.drawSignalSeries(ctx, this.rClean2, '#ff00ff', 'R²clean (Δ²t)', 2 * height / 3);
+                
+                // Draw curvature signal
+                ctx.strokeStyle = '#00ff88';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                const curvatureY = height / 2;
+                ctx.moveTo(0, curvatureY);
+                ctx.lineTo(width, curvatureY - (this.curvatureSignal / 300) * height / 4);
+                ctx.stroke();
+                
+                // Labels
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '14px Arial';
+                ctx.fillText('R-TFT Background Subtraction', 20, 30);
+                ctx.font = '12px Arial';
+                ctx.fillText('Rclean = 2Rinner - Router', 20, 50);
+                
+                // Legend
+                ctx.fillStyle = '#00d4ff';
+                ctx.fillText('R¹clean (Δt)', width - 150, 30);
+                ctx.fillStyle = '#ff00ff';
+                ctx.fillText('R²clean (Δ²t)', width - 150, 50);
+                ctx.fillStyle = '#00ff88';
+                ctx.fillText('κφ signal', width - 150, 70);
+            }
+
+            drawSignalSeries(ctx, data, color, label, baseY) {
+                if (data.length === 0) return;
+                
+                const width = this.signalCanvas.width;
+                const height = this.signalCanvas.height;
+                
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                const maxVal = Math.max(...data.map(Math.abs));
+                const scale = height / 8;
+                
+                for (let i = 0; i < data.length; i++) {
+                    const x = (i / data.length) * width;
+                    const y = baseY - (data[i] / maxVal) * scale;
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                ctx.stroke();
+                
+                // Baseline
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, baseY);
+                ctx.lineTo(width, baseY);
+                ctx.stroke();
+            }
+
+            startDetection() {
+                this.isRunning = true;
+                this.animate();
+            }
+
+            stopDetection() {
+                this.isRunning = false;
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+            }
+
+            animate() {
+                if (!this.isRunning) return;
+                
+                // Add small perturbations to simulate dynamic curvature
+                this.generateShells();
+                
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Initialize the detector
+        const detector = new GoldenShellCurvatureDetector();
+
+        function startDetection() {
+            detector.startDetection();
+        }
+
+        function stopDetection() {
+            detector.stopDetection();
+        }
+
+        // Auto-start
+        window.addEventListener('load', () => {
+            detector.startDetection();
+        });
+    </script>
+</body>
+</html>
