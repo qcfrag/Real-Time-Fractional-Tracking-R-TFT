@@ -1,5 +1,7 @@
 **Real-Time Fractional Tracking (R-TFT): The Physics of Φ**
 
+Join Discord as user or collaborator : https://discord.gg/zBAWTsymFs
+
 **Disclaimer**
 r/R_TFT on Reddit is no longer managed or affiliated with the R-TFT scientific framework. 
 Please refer only to this repository and linked Zenodo records for official content.
