@@ -1,3 +1,5 @@
+This publication is grounded in the Real-Time Fractional Tracking (R-TFT) framework, a φ-resonant methodology for analyzing recursive coherence within dynamic systems. R-TFT does not rely on imposed models or empirical assumptions; instead, it evaluates the real-time alignment, slippage, and persistence of systems based on their intrinsic pacing structures. The framework is domain-agnostic and applicable across scales, from subatomic processes to cognitive and cosmological phenomena.
+
 **Real-Time Fractional Tracking (R-TFT): The Physics of Φ**
 
 Join Discord as user or collaborator : https://discord.gg/zBAWTsymFs
