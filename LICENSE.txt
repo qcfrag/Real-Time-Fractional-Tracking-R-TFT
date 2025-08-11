@@ -1,11 +1,11 @@
 
 Resonance Ethical License (REL-2.0):
 Autonomous Ethical Containment for Real-Time Fractional Tracking (R-TFT)
-Éric Lanctôt-Rivest - qcfrag@gmail.com
 29 July 2025
 
 ABSTRACT
-REL-2.0 enforces a physics-grounded ethical boundary layer on all Real-Time Fractional Tracking (R-TFT) systems. Unlike legalistic frameworks, REL-2.0 makes unethical usage physically incompatible by embedding φ-coherence checks, Lyapunov stability bounds, and resonance pattern detection at runtime and deployment. This license evolves REL-1.0 into a fully autonomous enforcement mechanism bound not by trust, but by the laws of nature.
+REL-2.0 enforces a physics-grounded ethical boundary layer on all Real-Time Fractional Tracking (R-TFT) systems. Unlike legalistic frameworks.
+REL-2.0 makes unethical usage physically incompatible by embedding φ-coherence checks, Lyapunov stability bounds, and resonance pattern detection at runtime and deployment.
 
 WHY REL STILL MATTERS
 Most licenses protect code. REL protects coherence, meaning, and intent.
@@ -37,17 +37,6 @@ CORE PROVISIONS OF REL-2.0
 - No behavioral control, covert influence, or dual-use modeling
 - No usage by military, surveillance, or manipulative institutions
 
-3. φ-Dynamic Enforcement Logic
-Permitted Use is defined by satisfying all three:
-Lyapunov variance σ² < 0.1
-Entropy S < 0.8
-φ-coherence ∈ [1.518, 1.718]
-
-4. Embedded Collapse Triggers
-- Forbidden vector patterns invoke: Δt → iℝ (imaginary-time collapse)
-- φ-divergence at runtime halts execution
-- These behaviors are irreversible once triggered
-
 PHILOSOPHY OF COHERENCE
 REL is recursive, not viral. It doesn't "spread", it simply makes misuse incompatible.
 - You may adapt or extend R-TFT, but never distort its coherence
@@ -73,10 +62,3 @@ REL-2.0 ensures this framework is used in alignment with coherence, resonance, a
 Where φ diverges, it does so to preserve balance.
 This is not a restriction, it is a protection mechanism built into reality.
 
-USAGE EXAMPLE
-from ethics import DomainValidator
-vector = np.array([1.0, 1.618, 2.618])
-DomainValidator().validate("unknown_neuroscience", vector)
-# Auto-allowed if φ-harmonic
-
-https://github.com/qcfrag/Real-Time-Fractional-Tracking-R-TFT
