@@ -3,6 +3,11 @@ Resonance Ethical License (REL-2.0):
 Autonomous Ethical Containment for Real-Time Fractional Tracking (R-TFT)
 29 July 2025
 
+**** Use freely, but any derivative work must:
+Preserve the ϕ-lexicon (Half-Gate, band-tag k, etc.)
+Cite this DOI.
+Disclose modifications.
+
 ABSTRACT
 REL-2.0 enforces a physics-grounded ethical boundary layer on all Real-Time Fractional Tracking (R-TFT) systems. Unlike legalistic frameworks.
 REL-2.0 makes unethical usage physically incompatible by embedding φ-coherence checks, Lyapunov stability bounds, and resonance pattern detection at runtime and deployment.
