@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Solar φ‑Band Atlas — Top View (LEX)</title>
+  <style>
+    :root {
+      --bg0: #0d1220;
+      --bg1: radial-gradient(1200px 800px at 60% 40%, #101730 0%, #0b0f1b 60%, #080c16 100%);
+      --ring: #f6d66a;
+      --ring-dim: #3b3f52;
+      --text: #e9e6ff;
+      --muted: #a9b0c5;
+      --accent: #ffd670;
+      --accent-2: #f4a261;
+      --panel: #121728cc;
+      --ok: #64d3a5;
+      --warn: #f6c26a;
+      --bad: #f27777;
+    }
+    html, body { height: 100%; background: var(--bg1); color: var(--text); margin: 0; font: 14px/1.3 Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    .app { display: grid; grid-template-columns: 320px 1fr; grid-template-rows: auto 1fr auto; height: 100%; }
+    header { grid-column: 1/3; display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: linear-gradient(180deg, #121829cc, #0b1020aa); border-bottom: 1px solid #20263a; }
+    header h1 { font-size: 16px; letter-spacing: 0.08em; margin: 0; color: var(--accent); }
+    header .small { color: var(--muted); font-size: 12px; }
+    .panel { padding: 16px; background: var(--panel); backdrop-filter: blur(6px); border-right: 1px solid #20263a; }
+    .panel h2 { margin: 0 0 10px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+    .panel .kvs { display: grid; grid-template-columns: auto 1fr; gap: 6px 8px; font-size: 13px; color: var(--muted); }
+    .panel .kvs b { color: var(--text); font-weight: 600; }
+    .panel .box { margin-top: 12px; padding: 10px; border: 1px solid #273049; border-radius: 12px; background: #0b1124; }
+    .panel label { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+    .panel input[type="checkbox"] { transform: translateY(1px); }
+    .controls { display: grid; gap: 8px; margin-top: 8px; }
+    .controls .row { display: flex; gap: 8px; }
+    .controls button, .controls .file { appearance: none; border: 1px solid #2d3450; background: #11182f; color: var(--text); border-radius: 10px; padding: 8px 10px; font-weight: 600; cursor: pointer; }
+    .controls button:hover { border-color: #46507a; }
+    .legend { display: grid; grid-template-columns: 12px auto; gap: 6px 10px; align-items: center; font-size: 12px; color: var(--muted); margin-top: 10px; }
+    .sw { width: 10px; height: 10px; border-radius: 50%; background: #888; }
+    .sw.inner { background: #ffd166; }
+    .sw.edge { background: #fca311; }
+    .sw.neutral { background: #bdb2ff; }
+    .sw.outer { background: #6aa6ff; }
+
+    .stage-wrap { position: relative; overflow: hidden; }
+    .stage { width: 100%; height: 100%; }
+    svg { width: 100%; height: 100%; display: block; }
+    .note { position: absolute; bottom: 8px; right: 12px; font-size: 12px; color: var(--muted); opacity: .8; }
+    .tooltip { position: absolute; pointer-events: none; background: #101428cc; border: 1px solid #2a3250; padding: 8px 10px; border-radius: 10px; font-size: 12px; transform: translate(-50%, -120%); min-width: 200px; }
+    .tooltip b { color: var(--accent); }
+    .ringLabel { fill: var(--muted); font-size: 10px; }
+    .watermark { position: absolute; bottom: 10px; left: 12px; font-size: 11px; color: #54618d; letter-spacing: .06em; }
+  
+  .kbd { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .kbd h3 { margin: 0 0 6px 0; font-size: 12px; color: var(--text-dim); letter-spacing: .08em; text-transform: uppercase; }
+  .kbrow { display: flex; align-items: center; gap: 8px; margin: 4px 0; color: var(--text-dim); }
+  .kbrow kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6px; border-radius: 6px;
+               background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: var(--text);
+               font-weight: 600; }
+</style>
+  <!-- decimal.js for precise φ math in UI (we still render with Number pixels) -->
+  <script src="https://cdn.jsdelivr.net/npm/decimal.js@10.4.3/decimal.min.js"></script>
+  
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>RTFT - CSV Viewer Importer<span class="small"> 1.0</span></h1>
+      <div class="small">φ = 1.6180339887498948482… · k: integer shells · R = Pw/(Pw+Pb)</div>
+    </header>
+
+    <aside class="panel">
+      <h2>Lexicon</h2>
+      <div class="kvs">
+        <div>Stepcode</div><div><b>s</b> = log<sub>φ</sub>(a/r₀)</div>
+        <div>Band‑Tag</div><div><b>k</b> = nearest integer (shell)</div>
+        <div>Half‑Drift</div><div><b>e</b> = s − k; use |e|</div>
+        <div>Within weight</div><div><b>Pw</b></div>
+        <div>Beyond weight</div><div><b>Pb</b></div>
+        <div>Tilt</div><div><b>R</b> = Pw/(Pw+Pb) ∈ [0,1]</div>
+        <div>Bands</div><div>Inner/on ≤ 0.20 · Edge/knee ≤ 0.33 · Neutral ridge = 0.50 · Outer else</div>
+      </div>
+
+      <div class="box">
+        <h2>Data</h2>
+        <div class="controls">
+          <input id="file" class="file" type="file" accept=".csv" />
+          <div class="row">
+            <button id="btnSample">Load sample</button>
+            <button id="btnExport">Export PNG</button>
+          </div>
+          <label><input id="chkLabels" type="checkbox" checked /> Show labels</label>
+          <label><input id="chkK" type="checkbox" checked /> Show k‑rings</label>
+          <label><input id="chkBands" type="checkbox" checked /> Color by band</label>
+        </div>
+        <div class="legend">
+          <div class="sw inner"></div><div>Inner/on</div>
+          <div class="sw edge"></div><div>Edge/knee</div>
+          <div class="sw neutral"></div><div>Neutral ridge</div>
+          <div class="sw outer"></div><div>Outer</div>
+        </div>
+      </div>
+	  
+	    <div class="box">
+        <h2 class="csvtitle">PHI Bands</h2>
+        <div class="csvdesc">
+		The φ lattice arises from self-resonance: shells are the integers 𝑘 in a dimensionless coordinate 𝑠, and band tags come from fixed thresholds on the offset ∣e∣=∣s−k∣. This makes the lattice intrinsic and invariant,set by integer structure, not by external descriptors. Environments and drives only affect occupancy (the distribution across shells/bands, coherence, and tilt), while the lattice itself remains unchanged.
+		</div>
+      </div>
+	  
+    </aside>
+
+    <main class="stage-wrap">
+        <svg id="svg" class="stage" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid meet" aria-labelledby="title desc">
+        <title id="title">Top view of solar φ‑bands</title>
+		<desc id="desc">Concentric integer shells (k), bodies at radius s, band colors from |e|; labels show |e| and R.</desc>
+        <defs>
+          <radialGradient id="bgGrad" cx="60%" cy="40%" r="90%">
+            <stop offset="0%" stop-color="#0c1226"/>
+            <stop offset="60%" stop-color="#090e19"/>
+            <stop offset="100%" stop-color="#0c1226"/>
+          </radialGradient>
+          <filter id="glow"><feGaussianBlur stdDeviation="1.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <rect x="0" y="0" width="1200" height="900" fill="url(#0c1226)"/>
+        <g id="rings"></g>
+        <g id="points"></g>
+        <g id="labels"></g>
+		
+      </svg>
+	  
+      <div id="tip" class="tooltip" style="display:none"></div>
+      <div class="note">Drag a CSV (Name,s,k,Pw,Pb) or use the sample. Columns are auto‑mapped; R is computed.</div>
+      <div class="watermark">LEX terms · no aliases · φ‑core</div>
+    </main>
+
+    </div>
+
+  <script>
+  // ===== Utilities =====
+  function updateCsvHeader(meta, filename, data) {
+  const titleEl = document.querySelector('.csvtitle');
+  const descEl  = document.querySelector('.csvdesc');
+  if (!titleEl || !descEl) return;
+
+  const title = meta?.title || filename || 'φ-Band Atlas';
+  const desc  = meta?.desc  || (data?.length ? `${data.length} bodies` : '');
+  titleEl.textContent = title;
+  descEl.textContent  = desc;
+}
+  
+  const φ = new Decimal(5).sqrt().plus(1).div(2);
+  const byId = id => document.getElementById(id);
+
+  const palette = {
+    inner: '#ffd166',
+    edge: '#fca311',
+    neutral: '#bdb2ff',
+    outer: '#6aa6ff',
+    point: '#f0f3ff'
+  };
+
+  function bandFromAbsE(e){
+    const x = Number(e);
+    if (x <= 0.20) return 'Inner/on';
+    if (x <= 0.33) return 'Edge/knee';
+    if (Math.abs(x - 0.50) < 1e-12) return 'Neutral ridge';
+    return 'Outer';
+  }
+
+  function bandColor(b){
+    return b === 'Inner/on' ? palette.inner
+      : b === 'Edge/knee' ? palette.edge
+      : b === 'Neutral ridge' ? palette.neutral
+      : palette.outer;
+  }
+
+function detectSep(text) {
+  const lines = text.split(/\r\n|\n|\r/).slice(0, 20);
+  const seps = [",",";","\t","|"];
+  const count = (line, sep) => {
+    let inQ=false, c=0;
+    for (let i=0;i<line.length;i++){
+      const ch=line[i];
+      if (ch === '"') inQ = !inQ;
+      else if (ch === sep && !inQ) c++;
+    }
+    return c;
+  };
+  const scores = Object.fromEntries(seps.map(s=>[s, lines.reduce((a,l)=>a+count(l,s),0)]));
+  return Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
+}
+
+function splitCSVLine(line, sep) {
+  const out=[], cur=[]; let inQ=false;
+  for (let i=0;i<line.length;i++){
+    const ch=line[i];
+    if (ch === '"'){
+      if (inQ && line[i+1] === '"'){ cur.push('"'); i++; }
+      else inQ = !inQ;
+    } else if (ch === sep && !inQ){
+      out.push(cur.join("")); cur.length=0;
+    } else {
+      cur.push(ch);
+    }
+  }
+  out.push(cur.join(""));
+  return out;
+}
+
+function bandFromAbsE(e){
+  const x = Number(e);
+  if (x <= 0.20) return 'Inner/on';
+  if (x <= 0.33) return 'Edge/knee';
+  if (Math.abs(x - 0.50) < 1e-12) return 'Neutral ridge';
+  return 'Outer';
+}
+
+function parseCSV(text){
+
+  // strip BOM + trim
+  text = text.replace(/^\uFEFF/, "").trim();
+
+  const sep = detectSep(text);
+  const lines = text.split(/\r\n|\n|\r/).filter(l => l.trim().length);
+  if (!lines.length) return [];
+
+  const header = splitCSVLine(lines[0], sep).map(h => h.trim());
+  const H = (name, rx) => {
+    const i = header.findIndex(h => h.toLowerCase() === name.toLowerCase());
+    if (i >= 0) return header[i];
+    if (rx) {
+      const j = header.find(h => rx.test(h));
+      if (j) return j;
+    }
+    return null;
+  };
+
+  const cName = H("name") || header[0];
+  const cS    = H("s") || H("s_logphi", /s[_-]?logphi/i);
+  let   cK    = H("k") || H("k_nearest", /k[_-]?nearest/i);
+  const cPw   = H("pw") || H("S_in", /s[_ ]?in/i);
+  const cPb   = H("pb") || H("S_out", /s[_ ]?out/i);
+  const cAbsE = H("|e|", /\|e\||abs_?d?n|\|Δn\|/i);
+  const cCphi = H("Cφ", /cφ|cphi/i);
+  const cSphi = H("Sφ", /sφ|sphi/i);
+  const cBand = H("band", /^band$/i);
+
+  const readNum = (v) => {
+    if (v == null) return null;
+    const t = String(v).trim();
+    if (!t) return null;
+    // accept decimal commas in data values
+    const t2 = (t.includes('.') ? t : t.replace(',', '.'));
+    try { return new Decimal(t2); } catch { return null; }
+  };
+
+  const data = [];
+  for (let li=1; li<lines.length; li++){
+    const cells = splitCSVLine(lines[li], sep);
+    if (cells.length < header.length) continue; // skip short/malformed rows
+    const obj = Object.fromEntries(header.map((h,i)=>[h, cells[i]]));
+
+    const s = readNum(obj[cS]); if (!s) continue; // s is mandatory
+    let   k = cK ? readNum(obj[cK]) : null;
+    if (!k) k = new Decimal(Math.round(s.toNumber())); // compute if missing
+    const eabs = cAbsE ? readNum(obj[cAbsE]) : s.minus(k).abs();
+
+    // Two modes:
+    // 1) Planetary (Pw/Pb present) → compute R
+    // 2) Atomic (Cφ/Sφ present)   → no Pw/Pb, show Cφ/Sφ
+    const Pw = cPw ? readNum(obj[cPw]) : null;
+    const Pb = cPb ? readNum(obj[cPb]) : null;
+    const R  = (Pw && Pb) ? Pw.div(Pw.plus(Pb)) : null;
+
+    const Cphi = cCphi ? readNum(obj[cCphi]) : null;
+    const Sphi = cSphi ? readNum(obj[cSphi]) : null;
+
+    const band = cBand ? String(obj[cBand]) : bandFromAbsE(eabs);
+
+    data.push({ Name: obj[cName] ?? "", s, k, eabs, Pw, Pb, R, Cphi, Sphi, band });
+  }
+  return data;
+}
+
+  function sampleData(){
+    // Minimal sample aligned to lexicon. (Not claiming real values.)
+    return [
+      {Name:'Mercury', s:new Decimal(2.39), k:new Decimal(2), eabs:new Decimal('0.39'), Pw:new Decimal('0.60'), Pb:new Decimal('0.40')},
+      {Name:'Venus',   s:new Decimal(2.96), k:new Decimal(3), eabs:new Decimal('0.04'), Pw:new Decimal('0.78'), Pb:new Decimal('0.22')},
+      {Name:'Earth',   s:new Decimal(3.10), k:new Decimal(3), eabs:new Decimal('0.10'), Pw:new Decimal('0.80'), Pb:new Decimal('0.20')},
+      {Name:'Mars',    s:new Decimal(3.57), k:new Decimal(4), eabs:new Decimal('0.43'), Pw:new Decimal('0.55'), Pb:new Decimal('0.45')},
+      {Name:'Jupiter', s:new Decimal(5.02), k:new Decimal(5), eabs:new Decimal('0.02'), Pw:new Decimal('0.90'), Pb:new Decimal('0.10')},
+      {Name:'Saturn',  s:new Decimal(5.70), k:new Decimal(6), eabs:new Decimal('0.30'), Pw:new Decimal('0.75'), Pb:new Decimal('0.25')},
+      {Name:'Uranus',  s:new Decimal(6.34), k:new Decimal(6), eabs:new Decimal('0.34'), Pw:new Decimal('0.58'), Pb:new Decimal('0.42')},
+      {Name:'Neptune', s:new Decimal(6.79), k:new Decimal(7), eabs:new Decimal('0.21'), Pw:new Decimal('0.72'), Pb:new Decimal('0.28')}
+    ].map(d=>({ ...d, R: d.Pw.div(d.Pw.plus(d.Pb)), band: bandFromAbsE(d.eabs) }));
+  }
+
+  // ===== Render =====
+  const svg = byId('svg');
+  const gRings = document.getElementById('rings');
+  const gPoints = document.getElementById('points');
+  const gLabels = document.getElementById('labels');
+  const tip = byId('tip');
+
+  let STATE = {
+    data: [],
+    showLabels: true,
+    showRings: true,
+    colorByBand: true
+  };
+
+  function setState(patch){ STATE = {...STATE, ...patch}; draw(); }
+
+  function dataRadiusExtent(data){
+    const sVals = data.map(d=>Number(d.s));
+    const min = Math.min(...sVals);
+    const max = Math.max(...sVals);
+    // pad to nearest integer shells
+    return [Math.floor(min), Math.ceil(max + 0.5)];
+  }
+
+  function draw(){
+    const {data, showLabels, showRings, colorByBand} = STATE;
+    const vb = svg.viewBox.baseVal;
+    const W = vb.width, H = vb.height;
+    const cx = vb.x + W/2, cy = vb.y + H/2;
+    const [rMin, rMax] = data.length ? dataRadiusExtent(data) : [0, 10];
+    const pxPerUnit = Math.min(W, H) / (2*(rMax+1));
+
+    // rings
+    gRings.innerHTML = '';
+    if (showRings) {
+      for (let k = rMin; k <= rMax; k++){
+        const Rpx = k * pxPerUnit;
+        const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        ring.setAttribute('cx', cx); ring.setAttribute('cy', cy); ring.setAttribute('r', Rpx);
+        ring.setAttribute('fill','none');
+        ring.setAttribute('stroke', k % 2 === 0 ? 'rgba(246,214,106,0.25)' : 'rgba(255,214,102,0.12)');
+        ring.setAttribute('stroke-width', 1.0);
+        ring.setAttribute('filter','url(#glow)');
+        gRings.appendChild(ring);
+        // ring label
+        const lbl = document.createElementNS('http://www.w3.org/2000/svg','text');
+        lbl.setAttribute('x', cx + Rpx + 6); lbl.setAttribute('y', cy - 2);
+        lbl.setAttribute('class', 'ringLabel');
+        lbl.textContent = `k=${k}`;
+        gRings.appendChild(lbl);
+      }
+    }
+
+    // points
+    gPoints.innerHTML = '';
+    gLabels.innerHTML = '';
+    if (!data.length) return;
+
+    // distribute angles for readability
+    // distribute angles for readability
+      const N = data.length;
+      for (let i=0;i<N;i++){
+      const d = data[i];
+      const theta = (i / N) * 2*Math.PI; // simple even spacing
+      const Rpx = Number(d.s) * pxPerUnit;
+      const x = cx + Math.cos(theta) * Rpx;
+      const y = cy + Math.sin(theta) * Rpx;
+      // point
+      const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('cx', x); dot.setAttribute('cy', y); dot.setAttribute('r', 5);
+      const col = colorByBand ? bandColor(d.band) : '#e6efff';
+      dot.setAttribute('fill', col);
+      dot.setAttribute('stroke', 'rgba(255,255,255,0.5)');
+      dot.setAttribute('stroke-width', 0.6);
+      dot.addEventListener('mousemove', (ev)=>showTip(ev, d));
+      dot.addEventListener('mouseleave', hideTip);
+      gPoints.appendChild(dot);
+
+      if (showLabels){
+        const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+        t.setAttribute('x', x + 8); t.setAttribute('y', y - 8);
+        t.setAttribute('fill', '#dfe5ff');
+        t.setAttribute('font-size', '11px');
+        const labelCore = `|e|=${Number(d.eabs).toFixed(2)}`;
+        const labelTail = (d.R!=null)
+        ? `R=${Number(d.R).toFixed(2)}`
+        : (d.Cphi!=null && d.Sphi!=null)
+        ? `Cφ=${Number(d.Cphi).toFixed(2)} · Sφ=${Number(d.Sphi).toFixed(2)}`
+        : ``;
+        t.textContent = `${d.Name}  ${labelCore}  ${labelTail}`.trim();
+        gLabels.appendChild(t);
+      }
+    }
+  }
+
+  function showTip(ev, d){
+  const e = Number(d.eabs).toFixed(4);
+  const lines = [
+    `<b>${d.Name}</b>`,
+    `s=${d.s.toString()} · k=${d.k.toString()} · |e|=${e}`
+  ];
+  if (d.Pw!=null && d.Pb!=null){
+    const r = Number(d.R).toFixed(4);
+    lines.push(`Pw=${d.Pw.toString()} · Pb=${d.Pb.toString()}`);
+    lines.push(`R = Pw/(Pw+Pb) = ${r}`);
+  }
+  if (d.Cphi!=null && d.Sphi!=null){
+    lines.push(`Cφ=${d.Cphi.toString()} · Sφ=${d.Sphi.toString()}`);
+  }
+  lines.push(`Band: ${d.band}`);
+  tip.innerHTML = lines.join('<br/>');
+  tip.style.display = 'block';
+  const bb = svg.getBoundingClientRect();
+  tip.style.left = (ev.clientX - bb.left) + 'px';
+  tip.style.top  = (ev.clientY - bb.top - 10) + 'px';
+}
+  function hideTip(){ tip.style.display = 'none'; }
+
+  // ===== IO & Controls =====
+  byId('btnSample').addEventListener('click', ()=>{ setState({ data: sampleData() }); });
+  byId('chkLabels').addEventListener('change', (e)=> setState({showLabels: e.target.checked}));
+  byId('chkK').addEventListener('change', (e)=> setState({showRings: e.target.checked}));
+  byId('chkBands').addEventListener('change', (e)=> setState({colorByBand: e.target.checked}));
+  byId('btnExport').addEventListener('click', () => exportPNG('rtft_preview.png', 2));
+  // File input
+byId('file').addEventListener('change', async (e)=>{
+  const f = e.target.files[0]; if (!f) return;
+  await handleCSVFileSimple(f);
+});
+
+  // Drag & drop
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', async e=>{
+  e.preventDefault();
+  const f = e.dataTransfer?.files?.[0]; if (!f) return;
+  await handleCSVFileSimple(f);
+});
+
+function exportPNG(filename = 'rtft_preview.png', scale = 2) {
+  const svgEl = document.getElementById('svg');
+  const serializer = new XMLSerializer();
+  const src = serializer.serializeToString(svgEl);
+
+  const svgBlob = new Blob([src], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(svgBlob);
+  const img = new Image();
+
+  img.onload = () => {
+    // use viewBox if present; otherwise fall back to client size
+    const vb = svgEl.viewBox && svgEl.viewBox.baseVal;
+    const W = ((vb && vb.width)  || svgEl.clientWidth  || 1200) * scale;
+    const H = ((vb && vb.height) || svgEl.clientHeight || 900)  * scale;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // background fill (so it’s not transparent)
+    ctx.fillStyle = '#0c1226';
+    ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(img, 0, 0, W, H);
+
+    URL.revokeObjectURL(url);
+
+    // prefer toBlob (smaller memory), fall back to dataURL if needed
+    if (canvas.toBlob) {
+      canvas.toBlob((blob) => {
+        if (window.showSaveFilePicker) {
+          // Optional: native Save As dialog (lets the user pick a folder/file name)
+          (async () => {
+            try {
+              const handle = await window.showSaveFilePicker({
+                suggestedName: filename,
+                types: [{ description: 'PNG', accept: { 'image/png': ['.png'] } }],
+              });
+              const writable = await handle.createWritable();
+              await writable.write(blob);
+              await writable.close();
+            } catch {
+              // if user cancels, fall back to download link
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = filename;
+              a.click();
+              URL.revokeObjectURL(a.href);
+            }
+          })();
+        } else {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = filename;
+          a.click();
+          URL.revokeObjectURL(a.href);
+        }
+      }, 'image/png');
+    } else {
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = filename;
+      a.click();
+    }
+  };
+
+  img.src = url;
+}
+
+
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e)=>{
+    if (e.key==='1') byId('chkLabels').click();
+    if (e.key==='2') byId('chkK').click();
+    if (e.key==='3') byId('chkBands').click();
+  });
+
+  // First render (empty)
+  draw();
+  
+  // === CSV title/desc from the first 2 lines ===
+function parseMeta2(text){
+  const t = text.replace(/^\uFEFF/,'');              // strip BOM
+  const L = t.split(/\r?\n/);
+  const m1 = (L[0]||'').trim().match(/^(#|;|\/\/)?\s*Title\s*:\s*(.+)$/i);
+  const m2 = (L[1]||'').trim().match(/^(#|;|\/\/)?\s*(Desc|Description)\s*:\s*(.+)$/i);
+  return m1 && m2
+    ? { title: m1[2], desc: m2[3], csvText: L.slice(2).join('\n') }
+    : { title: '',    desc: '',    csvText: t };
+}
+
+async function handleCSVFileSimple(file){
+  const raw = await file.text();
+  const meta = parseMeta2(raw);
+
+  // fill your sidebar box
+  const h = document.querySelector('.csvtitle');
+  const d = document.querySelector('.csvdesc');
+  if (h) h.textContent = meta.title || file.name || '';
+  if (d) d.textContent = meta.desc  || '';
+
+  // parse remaining rows and draw
+  const data = parseCSV(meta.csvText);
+  setState({ data });
+}
+  </script>
+</body>
+</html>

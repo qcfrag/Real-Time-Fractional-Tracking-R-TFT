@@ -1,0 +1,7 @@
+# Title: φ-Band Atlas — Kepler-223 Resonant Chain
+# Desc: The Kepler-223 system laid out on φ-shells so the well-known resonance shows up immediately as a structured arc instead of a list of periods. Use this to compare the chain’s spacing and band tags against the Solar System template, highlight which shells are populated, and spot where the pattern tightens or relaxes along the sequence.
+s,k,|e|,Pw,Pb,R,Body
+5.04294376666687,5,0.0429437666668692,0.791199425711803,0.3166097771037487,0.7142018893695148,b
+5.896007707402733,6,0.1039922925972668,0.9395505680961164,0.3205853098787743,0.7455946493691038,c
+7.102577369765343,7,0.1025773697653432,0.9398012927695856,0.320676929272164,0.7455910592784978,d
+7.956879594733679,8,0.0431204052663211,0.7912377553408225,0.3165931863197186,0.7142224734712922,e
