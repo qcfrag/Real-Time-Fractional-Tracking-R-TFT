@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+title: "Real-Time Fractional Tracking (R–TFT): Phase-Resonance Stability Assessment Across Scales"
+authors:
+  - family-names: Lanctôt-Rivest
+    given-names: Éric
+version: "v1.0.0"
+date-released: "2025-08-17"
+repository-code: "https://github.com/qcfrag/Real-Time-Fractional-Tracking-R-TFT"
+preferred-citation:
+  type: article
+  title: "Real-Time Fractional Tracking (R–TFT): Phase-Resonance Stability Assessment Across Scales"
+  authors:
+    - family-names: Lanctôt-Rivest
+      given-names: Éric
